@@ -170,6 +170,38 @@
             animation: pulse-glow 2s infinite;
         }
 
+        /* OTP Code Input Styles */
+        .otp-input {
+            width: 3rem;
+            height: 3.5rem;
+            text-align: center;
+            font-family: 'Space Grotesk';
+            font-weight: 800;
+            font-size: 1.25rem;
+            text-transform: uppercase;
+            background: rgba(250, 247, 242, 0.5);
+            border: 2px solid #d0cbc3;
+            border-radius: 0.5rem;
+            outline: none;
+            transition: all 0.2s ease;
+            caret-color: #0055ff;
+        }
+        .otp-input:focus {
+            border-color: #0055ff;
+            box-shadow: 0 0 0 4px rgba(0, 85, 255, 0.15);
+        }
+        .otp-input.error {
+            border-color: #cc0000;
+            animation: shake 0.5s ease;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+        }
+
         .reveal {
             opacity: 0;
             transform: translateY(30px);
@@ -206,7 +238,33 @@
 </head>
 <body class="bg-background text-primary font-body selection:bg-tertiary selection:text-white relative">
 <div class="aurora-bg"></div>
-<header class="w-full border-b border-outline-variant bg-white/80 backdrop-blur-md z-50 sticky top-0">
+
+<!-- Code Verification Overlay -->
+<div id="code-overlay" class="fixed inset-0 z-[9999] flex items-center justify-center bg-background">
+    <div class="w-full max-w-md px-6">
+        <div class="text-center mb-10">
+            <span class="font-headline text-5xl font-black tracking-tighter text-primary uppercase">QOAN</span>
+            <p class="font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant mt-4">Ingresa tu código de acceso</p>
+        </div>
+        <div class="premium-glass p-8 md:p-10 rounded-xl">
+            <div class="flex justify-center gap-2 md:gap-3 mb-6" id="otp-container">
+                <input type="text" maxlength="1" class="otp-input" data-index="0" autocomplete="off" inputmode="text"/>
+                <input type="text" maxlength="1" class="otp-input" data-index="1" autocomplete="off" inputmode="text"/>
+                <input type="text" maxlength="1" class="otp-input" data-index="2" autocomplete="off" inputmode="text"/>
+                <input type="text" maxlength="1" class="otp-input" data-index="3" autocomplete="off" inputmode="text"/>
+                <input type="text" maxlength="1" class="otp-input" data-index="4" autocomplete="off" inputmode="text"/>
+                <input type="text" maxlength="1" class="otp-input" data-index="5" autocomplete="off" inputmode="text"/>
+            </div>
+            <p id="code-error" class="text-error text-center font-headline font-bold text-xs uppercase tracking-widest mb-4 hidden">Código inválido o ya usado</p>
+            <button id="btn-verify-code" class="w-full bg-primary text-white py-4 rounded-lg font-headline font-black uppercase text-sm tracking-widest hover:bg-tertiary transition-all pulse-primary active:scale-95 flex items-center justify-center gap-2" type="button">
+                <span class="material-symbols-outlined text-lg">lock_open</span>
+                <span id="verify-text">Verificar Código</span>
+            </button>
+        </div>
+        <p class="text-center text-[10px] text-on-surface-variant uppercase tracking-widest mt-6 font-bold">Código de un solo uso</p>
+    </div>
+</div>
+<header id="app-header" style="display:none" class="w-full border-b border-outline-variant bg-white/80 backdrop-blur-md z-50 sticky top-0">
 <nav class="flex justify-between items-center w-full px-8 py-5 max-w-[1440px] mx-auto">
 <div class="flex items-center gap-12">
 <a class="text-3xl font-black tracking-tighter text-primary uppercase font-headline hover:scale-105 transition-transform" href="#">QOAN</a>
@@ -219,7 +277,7 @@
 <a class="hidden md:block bg-primary text-white px-6 py-2 font-headline font-bold uppercase text-xs tracking-widest hover:bg-tertiary transition-all hover:scale-105 active:scale-95" href="#solicitud">Solicitar Ahora</a>
 </nav>
 </header>
-<main>
+<main id="app-main" style="display:none">
 <!-- Hero Section -->
 <section class="relative overflow-hidden pt-28 pb-24 px-8 border-b border-outline-variant bg-gradient-to-b from-surface-bright to-background">
 <div class="max-w-[1440px] mx-auto grid lg:grid-cols-2 gap-16 items-center">
@@ -465,7 +523,7 @@
 </div>
 </section>
 </main>
-<footer class="w-full bg-primary py-20 reveal">
+<footer id="app-footer" style="display:none" class="w-full bg-primary py-20 reveal">
 <div class="max-w-[1440px] mx-auto px-8 flex flex-col md:flex-row justify-between items-start gap-16">
 <div class="space-y-6">
 <span class="font-headline text-4xl font-black text-primary-fixed uppercase tracking-tighter">QOAN</span>
@@ -513,6 +571,87 @@
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
     document.addEventListener('DOMContentLoaded', () => {
+        // === CODE VERIFICATION LOGIC ===
+        const codeOverlay = document.getElementById('code-overlay');
+        const otpInputs = document.querySelectorAll('.otp-input');
+        const btnVerify = document.getElementById('btn-verify-code');
+        const verifyText = document.getElementById('verify-text');
+        const codeError = document.getElementById('code-error');
+        const appHeader = document.getElementById('app-header');
+        const appMain = document.getElementById('app-main');
+        const appFooter = document.getElementById('app-footer');
+
+        if(otpInputs.length > 0) otpInputs[0].focus();
+
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                let val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                e.target.value = val;
+                if (val && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+                const fullCode = Array.from(otpInputs).map(i => i.value).join('');
+                if (fullCode.length === 6) verifyCode();
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+            input.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pasted = (e.clipboardData.getData('text') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+                pasted.split('').forEach((char, i) => { if (otpInputs[i]) otpInputs[i].value = char; });
+                if (pasted.length === 6) verifyCode();
+                else if (pasted.length > 0) otpInputs[Math.min(pasted.length, 5)].focus();
+            });
+        });
+
+        if(btnVerify) btnVerify.addEventListener('click', verifyCode);
+
+        async function verifyCode() {
+            const code = Array.from(otpInputs).map(i => i.value.toUpperCase()).join('');
+            if (code.length !== 6) { showCodeError(); return; }
+
+            btnVerify.disabled = true;
+            verifyText.textContent = 'Verificando...';
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('codigos_acceso')
+                    .select('*')
+                    .eq('codigo', code)
+                    .maybeSingle();
+
+                if (error || !data) { showCodeError(); return; }
+
+                await supabaseClient.from('codigos_acceso').delete().eq('codigo', code);
+
+                codeOverlay.style.opacity = '0';
+                codeOverlay.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => {
+                    codeOverlay.style.display = 'none';
+                    appHeader.style.display = '';
+                    appMain.style.display = '';
+                    appFooter.style.display = '';
+                }, 500);
+            } catch (err) {
+                console.error('Verification error', err);
+                showCodeError();
+            } finally {
+                btnVerify.disabled = false;
+                verifyText.textContent = 'Verificar Código';
+            }
+        }
+
+        function showCodeError() {
+            codeError.classList.remove('hidden');
+            otpInputs.forEach(i => { i.classList.add('error'); i.value = ''; });
+            setTimeout(() => otpInputs.forEach(i => i.classList.remove('error')), 500);
+            setTimeout(() => codeError.classList.add('hidden'), 3000);
+            otpInputs[0].focus();
+        }
+        // === END CODE VERIFICATION ===
         // Scroll Reveal Logic
         const reveals = document.querySelectorAll('.reveal');
         const revealOnScroll = () => {
@@ -949,9 +1088,7 @@
                                     </svg>
                                     Contactar Asesor
                                 </a>
-                                <button onclick="localStorage.removeItem('qoan_form_data'); location.reload();" class="w-full bg-transparent text-on-surface-variant font-headline font-bold uppercase text-xs tracking-widest px-10 py-4 rounded-xl hover:bg-surface-dim transition-colors">
-                                    Volver al inicio
-                                </button>
+
                             </div>
                         </div>
                     `;

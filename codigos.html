@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>QOAN - Obtener Código de Acceso</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "#1a1a1a",
+                    "tertiary": "#0055ff",
+                    "background": "#f5f0e8",
+                    "surface-bright": "#faf7f2",
+                    "on-surface-variant": "#4a4a4a",
+                    "outline-variant": "#d0cbc3",
+                    "error": "#cc0000",
+                    "primary-container": "#ffcc00",
+                },
+                fontFamily: {
+                    headline: ["Space Grotesk"],
+                    body: ["Inter"],
+                }
+            }
+        }
+    }
+</script>
+<style>
+    .premium-glass {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(26, 26, 26, 0.1);
+        box-shadow: 0 8px 32px 0 rgba(26, 26, 26, 0.05);
+    }
+    .code-char {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 3.5rem;
+        height: 4rem;
+        font-family: 'Space Grotesk';
+        font-weight: 800;
+        font-size: 1.75rem;
+        background: rgba(250, 247, 242, 0.8);
+        border: 2px solid #d0cbc3;
+        border-radius: 0.5rem;
+        color: #1a1a1a;
+        user-select: all;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+        animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    @keyframes pulse-glow {
+        0% { box-shadow: 0 0 0 0 rgba(0, 85, 255, 0.4); }
+        70% { box-shadow: 0 0 0 15px rgba(0, 85, 255, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(0, 85, 255, 0); }
+    }
+    .pulse-primary { animation: pulse-glow 2s infinite; }
+    .copied-toast {
+        animation: fadeIn 0.3s ease forwards;
+    }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-background text-primary font-body min-h-screen flex items-center justify-center px-4">
+
+<div class="w-full max-w-md">
+    <!-- Header -->
+    <div class="text-center mb-10 fade-in">
+        <span class="font-headline text-5xl font-black tracking-tighter text-primary uppercase">QOAN</span>
+        <p class="font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant mt-4">Tu código de acceso</p>
+    </div>
+
+    <!-- Code Card -->
+    <div class="premium-glass p-8 md:p-10 rounded-xl text-center fade-in" style="animation-delay: 0.15s; opacity: 0;">
+        <!-- Loading State -->
+        <div id="loading-state" class="py-8">
+            <span class="material-symbols-outlined text-4xl text-tertiary animate-spin">progress_activity</span>
+            <p class="font-headline font-bold uppercase text-xs tracking-widest text-on-surface-variant mt-4">Generando código...</p>
+        </div>
+
+        <!-- Code Display -->
+        <div id="code-display" class="hidden">
+            <p class="font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant mb-6">Usa este código para ingresar</p>
+            <div id="code-chars" class="flex justify-center gap-2 md:gap-3 mb-8">
+                <!-- Characters will be inserted here -->
+            </div>
+            <button id="btn-copy" class="w-full bg-primary text-white py-4 rounded-lg font-headline font-black uppercase text-sm tracking-widest hover:bg-tertiary transition-all pulse-primary active:scale-95 flex items-center justify-center gap-2" type="button">
+                <span class="material-symbols-outlined text-lg" id="copy-icon">content_copy</span>
+                <span id="copy-text">Copiar Código</span>
+            </button>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-state" class="hidden py-8">
+            <span class="material-symbols-outlined text-4xl text-error">error</span>
+            <p class="font-headline font-bold uppercase text-xs tracking-widest text-error mt-4">No hay códigos disponibles</p>
+            <p class="font-body text-on-surface-variant text-sm mt-2">Contacta al administrador</p>
+        </div>
+    </div>
+
+    <!-- Footer Note -->
+    <div class="text-center mt-6 fade-in" style="animation-delay: 0.3s; opacity: 0;">
+        <p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">⚠ Código de un solo uso — No lo compartas</p>
+    </div>
+</div>
+
+<script>
+    const supabaseUrl = 'https://bxuapccwvihylqbbpvjh.supabase.co';
+    const supabaseKey = 'sb_publishable_ninl1RmTmfZrQsX8MI-tmw_UhtZuUiX';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const loadingState = document.getElementById('loading-state');
+        const codeDisplay = document.getElementById('code-display');
+        const errorState = document.getElementById('error-state');
+        const codeChars = document.getElementById('code-chars');
+        const btnCopy = document.getElementById('btn-copy');
+        const copyText = document.getElementById('copy-text');
+        const copyIcon = document.getElementById('copy-icon');
+
+        try {
+            // Get total count of available codes
+            const { count, error: countError } = await supabaseClient
+                .from('codigos_acceso')
+                .select('*', { count: 'exact', head: true });
+
+            if (countError || !count || count === 0) {
+                loadingState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+                return;
+            }
+
+            // Pick a random offset
+            const randomOffset = Math.floor(Math.random() * count);
+
+            // Fetch one random code
+            const { data, error } = await supabaseClient
+                .from('codigos_acceso')
+                .select('codigo')
+                .range(randomOffset, randomOffset)
+                .single();
+
+            if (error || !data) {
+                loadingState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+                return;
+            }
+
+            const code = data.codigo;
+
+            // Display code as individual characters
+            codeChars.innerHTML = code.split('').map(char =>
+                `<span class="code-char">${char}</span>`
+            ).join('');
+
+            loadingState.classList.add('hidden');
+            codeDisplay.classList.remove('hidden');
+
+            // Copy button
+            let currentCode = code;
+            btnCopy.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(currentCode);
+                    copyText.textContent = '¡Copiado!';
+                    copyIcon.textContent = 'check_circle';
+                    btnCopy.classList.remove('bg-primary', 'hover:bg-tertiary');
+                    btnCopy.classList.add('bg-green-600', 'hover:bg-green-700');
+                    setTimeout(() => {
+                        copyText.textContent = 'Copiar Código';
+                        copyIcon.textContent = 'content_copy';
+                        btnCopy.classList.add('bg-primary', 'hover:bg-tertiary');
+                        btnCopy.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    }, 2000);
+                } catch (e) {
+                    // Fallback for older browsers
+                    const textarea = document.createElement('textarea');
+                    textarea.value = currentCode;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    copyText.textContent = '¡Copiado!';
+                    setTimeout(() => { copyText.textContent = 'Copiar Código'; }, 2000);
+                }
+            });
+
+        } catch (err) {
+            console.error('Error fetching code', err);
+            loadingState.classList.add('hidden');
+            errorState.classList.remove('hidden');
+        }
+    });
+</script>
+</body></html>
