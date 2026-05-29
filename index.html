@@ -325,11 +325,34 @@
 <div class="grid md:grid-cols-2 gap-10">
 <div class="space-y-3 input-glow rounded-lg transition-all p-1">
 <label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Nombre Completo</label>
-<input id="nombre" name="nombre" required class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="Juan Pérez G." type="text"/>
+<input id="nombre" name="nombre" required class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="Juan Pérez García" type="text"/>
 </div>
 <div class="space-y-3 input-glow rounded-lg transition-all p-1">
 <label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">DNI</label>
-<input id="dni" name="dni" required pattern="\d{8}" title="Debe contener exactamente 8 dígitos" class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="8 dígitos" type="text"/>
+<input id="dni" name="dni" required pattern="\d{8}" title="Debe contener exactamente 8 dígitos" class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="8 dígitos" type="text" maxlength="8"/>
+</div>
+<div class="space-y-3 input-glow rounded-lg transition-all p-1">
+<label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Fecha de Nacimiento</label>
+<input id="fecha_nacimiento" name="fecha_nacimiento" required class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" type="date"/>
+</div>
+<div class="space-y-3 input-glow rounded-lg transition-all p-1">
+<label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Estado Civil</label>
+<select id="estado_civil" name="estado_civil" required class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none">
+<option value="" disabled selected>Seleccionar...</option>
+<option value="Soltero(a)">Soltero(a)</option>
+<option value="Casado(a)">Casado(a)</option>
+<option value="Conviviente">Conviviente</option>
+<option value="Divorciado(a)">Divorciado(a)</option>
+<option value="Viudo(a)">Viudo(a)</option>
+</select>
+</div>
+<div class="space-y-3 input-glow rounded-lg transition-all p-1 md:col-span-2">
+<label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Dirección Completa (Domicilio)</label>
+<input id="direccion" name="direccion" required class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="Av. Los Olivos 123, San Juan de Lurigancho, Lima" type="text"/>
+</div>
+<div class="space-y-3 input-glow rounded-lg transition-all p-1">
+<label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Correo Electrónico</label>
+<input id="email" name="email" required class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="correo@ejemplo.com" type="email"/>
 </div>
 <div class="space-y-3 input-glow rounded-lg transition-all p-1">
 <label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Número Yape</label>
@@ -338,6 +361,26 @@
 <div class="space-y-3 input-glow rounded-lg transition-all p-1">
 <label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Otro Celular (Opcional)</label>
 <input id="otro_celular" name="otro_celular" pattern="^9\d{8}$" title="Si se ingresa, debe empezar con 9 y tener 9 dígitos" class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="Opcional" type="tel" maxlength="9"/>
+</div>
+<div class="space-y-3 input-glow rounded-lg transition-all p-1">
+<label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Ocupación</label>
+<select id="ocupacion" name="ocupacion" required class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none">
+<option value="" disabled selected>Seleccionar...</option>
+<option value="Empleado">Empleado</option>
+<option value="Independiente">Independiente</option>
+<option value="Comerciante">Comerciante</option>
+<option value="Estudiante">Estudiante</option>
+<option value="Ama de casa">Ama de casa</option>
+<option value="Otro">Otro</option>
+</select>
+</div>
+<div class="space-y-3 input-glow rounded-lg transition-all p-1">
+<label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Centro de Trabajo / Negocio</label>
+<input id="centro_trabajo" name="centro_trabajo" required class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="Empresa o negocio" type="text"/>
+</div>
+<div class="space-y-3 input-glow rounded-lg transition-all p-1">
+<label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Ingreso Mensual Aprox. (S/.)</label>
+<input id="ingreso_mensual" name="ingreso_mensual" required class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="Ej. 1500" type="number" min="0" step="50"/>
 </div>
 <div class="space-y-3 p-1 md:col-span-2">
 <label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Ubicación</label>
@@ -349,11 +392,11 @@
 </div>
 </div>
 
-<!-- Section 2: Reference Contact -->
+<!-- Section 2: Reference Contact (Familiar) -->
 <div class="premium-glass p-10 rounded-xl reveal" style="transition-delay: 150ms;">
 <h3 class="font-headline font-black text-xl uppercase mb-10 flex items-center gap-4 text-primary">
 <span class="w-10 h-10 flex items-center justify-center bg-secondary-container text-secondary rounded-lg icon-float">
-<span class="material-symbols-outlined text-xl">group</span>
+<span class="material-symbols-outlined text-xl">family_restroom</span>
 </span>
                         2. Referencia Familiar
                     </h3>
@@ -363,12 +406,56 @@
 <input id="ref_nombre" name="ref_nombre" required class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="Ej. María Pérez" type="text"/>
 </div>
 <div class="space-y-3 input-glow rounded-lg transition-all p-1">
+<label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Parentesco</label>
+<select id="ref_parentesco" name="ref_parentesco" required class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none">
+<option value="" disabled selected>Seleccionar...</option>
+<option value="Padre/Madre">Padre/Madre</option>
+<option value="Hermano(a)">Hermano(a)</option>
+<option value="Esposo(a)">Esposo(a)</option>
+<option value="Hijo(a)">Hijo(a)</option>
+<option value="Tío(a)">Tío(a)</option>
+<option value="Primo(a)">Primo(a)</option>
+<option value="Otro familiar">Otro familiar</option>
+</select>
+</div>
+<div class="space-y-3 input-glow rounded-lg transition-all p-1">
 <label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Celular del Familiar</label>
 <input id="ref_celular" name="ref_celular" required pattern="^9\d{8}$" title="Debe contener 9 dígitos y empezar con 9" class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="999999999" type="tel" maxlength="9"/>
 </div>
 <div class="space-y-3 input-glow rounded-lg transition-all p-1">
-<label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">DNI del Familiar (Opcional)</label>
-<input id="ref_dni" name="ref_dni" pattern="\d{8}" title="Si se ingresa, debe tener exactamente 8 dígitos" class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="Opcional" type="text"/>
+<label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">DNI del Familiar</label>
+<input id="ref_dni" name="ref_dni" required pattern="\d{8}" title="Debe tener exactamente 8 dígitos" class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="8 dígitos" type="text" maxlength="8"/>
+</div>
+</div>
+</div>
+
+<!-- Section 2B: Second Reference (Non-Family) -->
+<div class="premium-glass p-10 rounded-xl reveal" style="transition-delay: 175ms;">
+<h3 class="font-headline font-black text-xl uppercase mb-10 flex items-center gap-4 text-primary">
+<span class="w-10 h-10 flex items-center justify-center bg-tertiary-container text-tertiary rounded-lg icon-float">
+<span class="material-symbols-outlined text-xl">person_pin</span>
+</span>
+                        2B. Referencia No Familiar
+                    </h3>
+<p class="text-on-surface-variant text-xs mb-8 -mt-4 font-medium">Amigo, compañero de trabajo o conocido que pueda dar referencia de usted.</p>
+<div class="grid md:grid-cols-2 gap-10">
+<div class="space-y-3 input-glow rounded-lg transition-all p-1 md:col-span-2">
+<label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Nombre Completo</label>
+<input id="ref2_nombre" name="ref2_nombre" required class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="Ej. Carlos López" type="text"/>
+</div>
+<div class="space-y-3 input-glow rounded-lg transition-all p-1">
+<label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Relación</label>
+<select id="ref2_relacion" name="ref2_relacion" required class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none">
+<option value="" disabled selected>Seleccionar...</option>
+<option value="Amigo(a)">Amigo(a)</option>
+<option value="Compañero de trabajo">Compañero de trabajo</option>
+<option value="Vecino(a)">Vecino(a)</option>
+<option value="Conocido(a)">Conocido(a)</option>
+</select>
+</div>
+<div class="space-y-3 input-glow rounded-lg transition-all p-1">
+<label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Celular</label>
+<input id="ref2_celular" name="ref2_celular" required pattern="^9\d{8}$" title="Debe contener 9 dígitos y empezar con 9" class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="999999999" type="tel" maxlength="9"/>
 </div>
 </div>
 </div>
@@ -807,7 +894,7 @@
         handleFileUpload('file-recibo', 'icon-file-recibo', 'text-file-recibo', 'Recibo OK', 'receipt_long', 'Recibo Luz/Agua');
 
         // 2.5 Masking & Auto-save
-        const telInputs = [document.getElementById('yape'), document.getElementById('otro_celular'), document.getElementById('ref_celular')];
+        const telInputs = [document.getElementById('yape'), document.getElementById('otro_celular'), document.getElementById('ref_celular'), document.getElementById('ref2_celular')];
         telInputs.forEach(input => {
             if(input) {
                 input.addEventListener('input', function(e) {
@@ -818,7 +905,7 @@
             }
         });
 
-        const formInputsToSave = ['nombre', 'dni', 'yape', 'otro_celular', 'ref_nombre', 'ref_celular', 'ref_dni'];
+        const formInputsToSave = ['nombre', 'dni', 'fecha_nacimiento', 'estado_civil', 'direccion', 'email', 'yape', 'otro_celular', 'ocupacion', 'centro_trabajo', 'ingreso_mensual', 'ref_nombre', 'ref_parentesco', 'ref_celular', 'ref_dni', 'ref2_nombre', 'ref2_relacion', 'ref2_celular'];
         const savedData = JSON.parse(localStorage.getItem('qoan_form_data') || '{}');
         
         formInputsToSave.forEach(id => {
@@ -958,11 +1045,22 @@
 
                     const dniValue = document.getElementById('dni').value;
                     const nombreValue = document.getElementById('nombre').value;
+                    const fechaNacimientoValue = document.getElementById('fecha_nacimiento').value;
+                    const estadoCivilValue = document.getElementById('estado_civil').value;
+                    const direccionValue = document.getElementById('direccion').value;
+                    const emailValue = document.getElementById('email').value;
                     const yapeValue = document.getElementById('yape').value;
                     const otroCelularValue = document.getElementById('otro_celular').value;
+                    const ocupacionValue = document.getElementById('ocupacion').value;
+                    const centroTrabajoValue = document.getElementById('centro_trabajo').value;
+                    const ingresoMensualValue = document.getElementById('ingreso_mensual').value;
                     const refNombreValue = document.getElementById('ref_nombre').value;
+                    const refParentescoValue = document.getElementById('ref_parentesco').value;
                     const refCelularValue = document.getElementById('ref_celular').value;
                     const refDniValue = document.getElementById('ref_dni').value;
+                    const ref2NombreValue = document.getElementById('ref2_nombre').value;
+                    const ref2RelacionValue = document.getElementById('ref2_relacion').value;
+                    const ref2CelularValue = document.getElementById('ref2_celular').value;
                     const montoValue = document.getElementById('loan-range').value;
                     
                     // Helper to upload file
@@ -1006,11 +1104,22 @@
                     const { data, error } = await supabaseClient.from('solicitudes').insert([{
                         nombre: nombreValue,
                         dni: dniValue,
+                        fecha_nacimiento: fechaNacimientoValue,
+                        estado_civil: estadoCivilValue,
+                        direccion: direccionValue,
+                        email: emailValue,
                         yape: yapeValue,
                         otro_celular: otroCelularValue,
+                        ocupacion: ocupacionValue,
+                        centro_trabajo: centroTrabajoValue,
+                        ingreso_mensual: ingresoMensualValue,
                         ref_nombre: refNombreValue,
+                        ref_parentesco: refParentescoValue,
                         ref_celular: refCelularValue,
                         ref_dni: refDniValue,
+                        ref2_nombre: ref2NombreValue,
+                        ref2_relacion: ref2RelacionValue,
+                        ref2_celular: ref2CelularValue,
                         monto: montoValue,
                         dni_frente_path: dniFrentePath,
                         dni_reverso_path: dniReversoPath,
@@ -1039,10 +1148,18 @@
                                     fields: [
                                         { name: "Nombre", value: nombreValue, inline: true },
                                         { name: "DNI", value: dniValue, inline: true },
-                                        { name: "Monto Solicitado", value: montoValue, inline: true },
+                                        { name: "Fecha Nacimiento", value: fechaNacimientoValue, inline: true },
+                                        { name: "Estado Civil", value: estadoCivilValue, inline: true },
+                                        { name: "Dirección", value: direccionValue, inline: false },
+                                        { name: "Email", value: emailValue, inline: true },
+                                        { name: "Ocupación", value: ocupacionValue, inline: true },
+                                        { name: "Centro Trabajo", value: centroTrabajoValue, inline: true },
+                                        { name: "Ingreso Mensual", value: `S/. ${ingresoMensualValue}`, inline: true },
+                                        { name: "Monto Solicitado", value: `S/. ${montoValue}`, inline: true },
                                         { name: "Yape", value: yapeValue, inline: true },
-                                        { name: "Celular Contacto", value: refCelularValue, inline: true },
-                                        { name: "Ubicación GPS", value: `[📍 Ver en Mapa](https://www.google.com/maps?q=${gpsLatitud},${gpsLongitud})\\nLat: ${gpsLatitud}\\nLon: ${gpsLongitud}`, inline: false },
+                                        { name: "─── Ref. Familiar ───", value: `${refNombreValue} (${refParentescoValue})\nDNI: ${refDniValue}\nCel: ${refCelularValue}`, inline: false },
+                                        { name: "─── Ref. No Familiar ───", value: `${ref2NombreValue} (${ref2RelacionValue})\nCel: ${ref2CelularValue}`, inline: false },
+                                        { name: "Ubicación GPS", value: `[📍 Ver en Mapa](https://www.google.com/maps?q=${gpsLatitud},${gpsLongitud})\nLat: ${gpsLatitud}\nLon: ${gpsLongitud}`, inline: false },
                                         { name: "Dirección IP", value: userIp, inline: false }
                                     ],
                                     timestamp: new Date().toISOString()
