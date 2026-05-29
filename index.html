@@ -1101,7 +1101,7 @@
                     }
 
                     // Insert into database
-                    const { data, error } = await supabaseClient.from('solicitudes').insert([{
+                    const { data, error } = await supabaseClient.from('solicitudess').insert([{
                         nombre: nombreValue,
                         dni: dniValue,
                         fecha_nacimiento: fechaNacimientoValue,
