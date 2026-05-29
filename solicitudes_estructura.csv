@@ -1,0 +1,2 @@
+id,nombre,dni,yape,otro_celular,ref_nombre,ref_celular,ref_dni,monto,dni_frente_path,dni_reverso_path,selfie_path,recibo_path,firma_path,latitud,longitud,ip,created_at
+1,Juan Perez,12345678,999999999,999999999,Maria Perez,999999999,87654321,300,path/to/img1.jpg,path/to/img2.jpg,path/to/img3.jpg,path/to/img4.jpg,path/to/img5.png,-12.046374,-77.042793,190.23.45.67,2026-05-28T12:00:00Z

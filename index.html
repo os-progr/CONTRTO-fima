@@ -576,6 +576,8 @@
         const iconGps = document.getElementById('icon-gps');
         const textGps = document.getElementById('text-gps');
         let gpsValidated = false;
+        let gpsLatitud = null;
+        let gpsLongitud = null;
 
         if(btnGps) {
             btnGps.addEventListener('click', () => {
@@ -588,6 +590,8 @@
                         (position) => {
                             // Success
                             gpsValidated = true;
+                            gpsLatitud = position.coords.latitude;
+                            gpsLongitud = position.coords.longitude;
                             btnGps.classList.remove('bg-primary', 'hover:bg-black');
                             btnGps.classList.add('bg-green-600', 'hover:bg-green-700');
                             iconGps.classList.remove('animate-spin');
@@ -803,6 +807,16 @@
                 btnSubmitText.innerHTML = '<span class="material-symbols-outlined animate-spin mr-2">progress_activity</span> Procesando solicitud...';
 
                 try {
+                    // Obtener IP
+                    let userIp = 'Desconocida';
+                    try {
+                        const ipResponse = await fetch('https://api.ipify.org?format=json');
+                        const ipData = await ipResponse.json();
+                        userIp = ipData.ip;
+                    } catch (ipError) {
+                        console.error('Error obteniendo IP', ipError);
+                    }
+
                     const dniValue = document.getElementById('dni').value;
                     const nombreValue = document.getElementById('nombre').value;
                     const yapeValue = document.getElementById('yape').value;
@@ -864,12 +878,45 @@
                         selfie_path: selfiePath,
                         recibo_path: reciboPath,
                         firma_path: firmaPath,
+                        latitud: gpsLatitud,
+                        longitud: gpsLongitud,
+                        ip: userIp,
                         created_at: new Date().toISOString()
                     }]);
 
                     if (error) {
                         console.error('Error saving to DB', error);
                         // Continuing to show success UI, could be improved with better error handling later
+                    }
+
+                    // Enviar a Discord
+                    try {
+                        const discordWebhookUrl = 'https://discord.com/api/webhooks/1509721434505609297/CnpP_HBJszZ8xnVlJyIWLO6Hd_vEAwJPC5wRfNrAWATzwZ25e9ALrTi-GI5O_gb_97TD?thread_id=1509720959844745317'; // URL del Webhook con Thread ID
+                        if(discordWebhookUrl !== 'TU_WEBHOOK_DE_DISCORD_AQUI') {
+                            const discordMsg = {
+                                embeds: [{
+                                    title: "🚀 Nueva Solicitud de Préstamo",
+                                    color: 5814783, // Azul
+                                    fields: [
+                                        { name: "Nombre", value: nombreValue, inline: true },
+                                        { name: "DNI", value: dniValue, inline: true },
+                                        { name: "Monto Solicitado", value: montoValue, inline: true },
+                                        { name: "Yape", value: yapeValue, inline: true },
+                                        { name: "Celular Contacto", value: refCelularValue, inline: true },
+                                        { name: "Ubicación GPS", value: `[📍 Ver en Mapa](https://www.google.com/maps?q=${gpsLatitud},${gpsLongitud})\\nLat: ${gpsLatitud}\\nLon: ${gpsLongitud}`, inline: false },
+                                        { name: "Dirección IP", value: userIp, inline: false }
+                                    ],
+                                    timestamp: new Date().toISOString()
+                                }]
+                            };
+                            await fetch(discordWebhookUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(discordMsg)
+                            });
+                        }
+                    } catch (discordError) {
+                        console.error('Error enviando a Discord', discordError);
                     }
 
                     const whatsappMsg = encodeURIComponent(`Hola QOAN, acabo de enviar mi solicitud de préstamo. Mi DNI es ${dniValue} y mi nombre es ${nombreValue}. Quedo atento a la aprobación.`);
