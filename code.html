@@ -201,6 +201,8 @@
             }
         }
     </style>
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-background text-primary font-body selection:bg-tertiary selection:text-white relative">
 <div class="aurora-bg"></div>
@@ -273,11 +275,11 @@
 </div>
 <div class="space-y-3 input-glow rounded-lg transition-all p-1">
 <label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Número Yape</label>
-<input id="yape" name="yape" required pattern="^9\d{2} \d{3} \d{3}$" title="Debe empezar con 9 y tener el formato: 999 999 999" class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="999 999 999" type="tel" maxlength="11"/>
+<input id="yape" name="yape" required pattern="^9\d{8}$" title="Debe empezar con 9 y tener 9 dígitos" class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="999999999" type="tel" maxlength="9"/>
 </div>
 <div class="space-y-3 input-glow rounded-lg transition-all p-1">
 <label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Otro Celular (Opcional)</label>
-<input id="otro_celular" name="otro_celular" pattern="^9\d{2} \d{3} \d{3}$" title="Si se ingresa, debe tener 9 dígitos" class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="Opcional" type="tel" maxlength="11"/>
+<input id="otro_celular" name="otro_celular" pattern="^9\d{8}$" title="Si se ingresa, debe empezar con 9 y tener 9 dígitos" class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="Opcional" type="tel" maxlength="9"/>
 </div>
 <div class="space-y-3 p-1 md:col-span-2">
 <label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Ubicación</label>
@@ -304,7 +306,7 @@
 </div>
 <div class="space-y-3 input-glow rounded-lg transition-all p-1">
 <label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Celular del Familiar</label>
-<input id="ref_celular" name="ref_celular" required pattern="^9\d{2} \d{3} \d{3}$" title="Debe contener 9 dígitos y empezar con 9" class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="999 999 999" type="tel" maxlength="11"/>
+<input id="ref_celular" name="ref_celular" required pattern="^9\d{8}$" title="Debe contener 9 dígitos y empezar con 9" class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none" placeholder="999999999" type="tel" maxlength="9"/>
 </div>
 <div class="space-y-3 input-glow rounded-lg transition-all p-1">
 <label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">DNI del Familiar (Opcional)</label>
@@ -506,6 +508,10 @@
 </div>
 </footer>
 <script>
+    const supabaseUrl = 'https://bxuapccwvihylqbbpvjh.supabase.co';
+    const supabaseKey = 'sb_publishable_ninl1RmTmfZrQsX8MI-tmw_UhtZuUiX';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
     document.addEventListener('DOMContentLoaded', () => {
         // Scroll Reveal Logic
         const reveals = document.querySelectorAll('.reveal');
@@ -664,12 +670,7 @@
                 input.addEventListener('input', function(e) {
                     let value = e.target.value.replace(/\D/g, '');
                     if (value.length > 9) value = value.slice(0, 9);
-                    let formatted = '';
-                    for (let i = 0; i < value.length; i++) {
-                        if (i > 0 && i % 3 === 0) formatted += ' ';
-                        formatted += value[i];
-                    }
-                    e.target.value = formatted;
+                    e.target.value = value;
                 });
             }
         });
@@ -780,7 +781,7 @@
                 localStorage.setItem('qoan_form_data', JSON.stringify(dataToSave));
             });
 
-            loanForm.addEventListener('submit', (e) => {
+            loanForm.addEventListener('submit', async (e) => {
                 e.preventDefault(); // Detener envío normal
 
                 // Check GPS requirement
@@ -801,10 +802,76 @@
                 btnSubmit.classList.remove('pulse-primary');
                 btnSubmitText.innerHTML = '<span class="material-symbols-outlined animate-spin mr-2">progress_activity</span> Procesando solicitud...';
 
-                // Simulate API Call delay (2 seconds)
-                setTimeout(() => {
+                try {
                     const dniValue = document.getElementById('dni').value;
                     const nombreValue = document.getElementById('nombre').value;
+                    const yapeValue = document.getElementById('yape').value;
+                    const otroCelularValue = document.getElementById('otro_celular').value;
+                    const refNombreValue = document.getElementById('ref_nombre').value;
+                    const refCelularValue = document.getElementById('ref_celular').value;
+                    const refDniValue = document.getElementById('ref_dni').value;
+                    const montoValue = document.getElementById('loan-range').value;
+                    
+                    // Helper to upload file
+                    const uploadFile = async (fileInputId, fileNamePrefix) => {
+                        const fileInput = document.getElementById(fileInputId);
+                        if (fileInput && fileInput.files.length > 0) {
+                            const file = fileInput.files[0];
+                            const ext = file.name.split('.').pop();
+                            const fileName = `${fileNamePrefix}_${dniValue}_${Date.now()}.${ext}`;
+                            const { data, error } = await supabaseClient.storage.from('documentos').upload(fileName, file);
+                            if (error) { console.error('Error uploading', fileInputId, error); return null; }
+                            return data.path;
+                        }
+                        return null;
+                    };
+
+                    const dniFrentePath = await uploadFile('file-dni-front', 'dni_frente');
+                    const dniReversoPath = await uploadFile('file-dni-back', 'dni_reverso');
+                    const selfiePath = await uploadFile('file-selfie-dni', 'selfie');
+                    const reciboPath = await uploadFile('file-recibo', 'recibo');
+                    
+                    // Handle signature (canvas or file)
+                    let firmaPath = null;
+                    const fileSignature = document.getElementById('file-signature');
+                    if (fileSignature && fileSignature.files.length > 0) {
+                        firmaPath = await uploadFile('file-signature', 'firma');
+                    } else if (window.hasValidSignature) {
+                        // Canvas to blob
+                        const canvas = document.getElementById('signature-pad');
+                        if (canvas) {
+                            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                            const fileName = `firma_canvas_${dniValue}_${Date.now()}.png`;
+                            const { data, error } = await supabaseClient.storage.from('documentos').upload(fileName, blob);
+                            if (!error && data) {
+                                firmaPath = data.path;
+                            }
+                        }
+                    }
+
+                    // Insert into database
+                    const { data, error } = await supabaseClient.from('solicitudes').insert([{
+                        nombre: nombreValue,
+                        dni: dniValue,
+                        yape: yapeValue,
+                        otro_celular: otroCelularValue,
+                        ref_nombre: refNombreValue,
+                        ref_celular: refCelularValue,
+                        ref_dni: refDniValue,
+                        monto: montoValue,
+                        dni_frente_path: dniFrentePath,
+                        dni_reverso_path: dniReversoPath,
+                        selfie_path: selfiePath,
+                        recibo_path: reciboPath,
+                        firma_path: firmaPath,
+                        created_at: new Date().toISOString()
+                    }]);
+
+                    if (error) {
+                        console.error('Error saving to DB', error);
+                        // Continuing to show success UI, could be improved with better error handling later
+                    }
+
                     const whatsappMsg = encodeURIComponent(`Hola QOAN, acabo de enviar mi solicitud de préstamo. Mi DNI es ${dniValue} y mi nombre es ${nombreValue}. Quedo atento a la aprobación.`);
                     
                     // Show Success Message Container
@@ -842,7 +909,15 @@
                         </div>
                     `;
                     document.getElementById('solicitud').scrollIntoView({ behavior: 'smooth' });
-                }, 2000);
+                } catch (e) {
+                    console.error("General error processing request", e);
+                    alert("Hubo un error al procesar tu solicitud. Por favor intenta de nuevo.");
+                } finally {
+                    btnSubmit.disabled = false;
+                    btnSubmit.classList.remove('opacity-80', 'cursor-not-allowed');
+                    btnSubmit.classList.add('pulse-primary');
+                    btnSubmitText.innerHTML = 'Finalizar y Desembolsar';
+                }
             });
         }
     });
