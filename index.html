@@ -536,6 +536,14 @@
 <option value="1 mes">1 Mes (30 días)</option>
 <option value="2 meses">2 Meses (60 días)</option>
 </select>
+<div class="mt-4 p-4 bg-tertiary/10 rounded-lg border border-tertiary/20">
+    <p class="text-xs text-primary font-bold mb-2 uppercase tracking-widest">Condiciones del Crédito:</p>
+    <ul class="text-[10px] text-on-surface-variant leading-relaxed font-bold space-y-1">
+        <li>• Interés total: <span class="text-tertiary">15%</span></li>
+        <li>• Interés por día: <span class="text-tertiary">S/. 2.50</span></li>
+        <li>• Mora por día de atraso: <span class="text-error">S/. 1.00</span></li>
+    </ul>
+</div>
 <p class="text-[10px] text-on-surface-variant mt-4 leading-relaxed uppercase font-bold">Sin cargos por pago anticipado.</p>
 </div>
 </div>
@@ -546,7 +554,7 @@
         <span class="w-10 h-10 flex items-center justify-center bg-surface-dim text-primary rounded-lg icon-float">
             <span class="material-symbols-outlined text-xl">draw</span>
         </span>
-        5. Firma Digital
+        5. Firma Digital (Obligatorio)
     </h3>
     <div class="space-y-4">
         <label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Firme dentro del recuadro con el dedo o mouse</label>
@@ -1266,6 +1274,9 @@
                         ref2_celular: ref2CelularValue,
                         monto: montoValue,
                         plazo: plazoValue,
+                        interes: '15%',
+                        interes_diario: '2.50',
+                        mora_diaria: '1.00',
                         dni_frente_path: dniFrentePath,
                         dni_reverso_path: dniReversoPath,
                         selfie_path: selfiePath,
