@@ -657,6 +657,80 @@
     const supabaseKey = 'sb_publishable_ninl1RmTmfZrQsX8MI-tmw_UhtZuUiX';
     const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
+    // === IndexedDB helpers for persisting photos across browser crashes ===
+    const PHOTO_DB_NAME = 'qoan_photos';
+    const PHOTO_DB_VERSION = 1;
+    const PHOTO_STORE = 'photos';
+
+    function openPhotoDB() {
+        return new Promise((resolve, reject) => {
+            const req = indexedDB.open(PHOTO_DB_NAME, PHOTO_DB_VERSION);
+            req.onupgradeneeded = () => req.result.createObjectStore(PHOTO_STORE);
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+    }
+
+    async function savePhotoToDB(key, blob) {
+        const db = await openPhotoDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(PHOTO_STORE, 'readwrite');
+            tx.objectStore(PHOTO_STORE).put(blob, key);
+            tx.oncomplete = () => { db.close(); resolve(); };
+            tx.onerror = () => { db.close(); reject(tx.error); };
+        });
+    }
+
+    async function getPhotoFromDB(key) {
+        const db = await openPhotoDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(PHOTO_STORE, 'readonly');
+            const req = tx.objectStore(PHOTO_STORE).get(key);
+            req.onsuccess = () => { db.close(); resolve(req.result || null); };
+            req.onerror = () => { db.close(); reject(req.error); };
+        });
+    }
+
+    async function deletePhotoFromDB(key) {
+        const db = await openPhotoDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(PHOTO_STORE, 'readwrite');
+            tx.objectStore(PHOTO_STORE).delete(key);
+            tx.oncomplete = () => { db.close(); resolve(); };
+            tx.onerror = () => { db.close(); reject(tx.error); };
+        });
+    }
+
+    async function clearAllPhotosFromDB() {
+        const db = await openPhotoDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(PHOTO_STORE, 'readwrite');
+            tx.objectStore(PHOTO_STORE).clear();
+            tx.oncomplete = () => { db.close(); resolve(); };
+            tx.onerror = () => { db.close(); reject(tx.error); };
+        });
+    }
+
+    function compressImage(file, maxWidth = 1200, quality = 0.7) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', quality);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+    // === END IndexedDB helpers ===
+
     document.addEventListener('DOMContentLoaded', () => {
         // === CODE VERIFICATION LOGIC ===
         const codeOverlay = document.getElementById('code-overlay');
@@ -879,7 +953,7 @@
             });
         }
 
-        // 2. File Upload UI Updates with Animations & Delete logic
+        // 2. File Upload UI Updates with Animations, Delete logic & IndexedDB persistence
         const handleFileUpload = (inputId, iconId, textId, successText, originalIcon, originalText) => {
             const input = document.getElementById(inputId);
             const icon = document.getElementById(iconId);
@@ -891,7 +965,7 @@
                 // Remove file handler
                 deleteBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    e.stopPropagation(); // Prevenir que abra el input de archivos
+                    e.stopPropagation();
                     
                     input.value = '';
                     icon.textContent = originalIcon;
@@ -900,22 +974,25 @@
                     text.textContent = originalText;
                     deleteBtn.classList.add('hidden');
                     container.classList.remove('border-green-500', 'bg-green-50');
+                    deletePhotoFromDB(inputId).catch(()=>{});
                 });
 
                 // File selected handler
-                input.addEventListener('change', (e) => {
+                input.addEventListener('change', async (e) => {
                     if(e.target.files.length > 0) {
-                        // Animation state
                         icon.textContent = 'sync';
                         icon.classList.add('animate-spin', 'text-tertiary');
                         icon.classList.remove('text-on-surface-variant', 'group-hover:text-tertiary', 'text-green-500');
-                        text.textContent = 'Subiendo...';
+                        text.textContent = 'Guardando...';
                         deleteBtn.classList.add('hidden');
-                        
-                        input.disabled = true; // Block further clicks during animation
+                        input.disabled = true;
+
+                        try {
+                            const compressed = await compressImage(e.target.files[0]);
+                            await savePhotoToDB(inputId, compressed);
+                        } catch(err) { console.error('Error saving photo to DB', err); }
 
                         setTimeout(() => {
-                            // Success state
                             input.disabled = false;
                             icon.classList.remove('animate-spin', 'text-tertiary');
                             icon.textContent = 'check_circle';
@@ -923,9 +1000,21 @@
                             text.textContent = successText;
                             deleteBtn.classList.remove('hidden');
                             container.classList.add('border-green-500', 'bg-green-50');
-                        }, 1200); // 1.2s upload simulation
+                        }, 800);
                     }
                 });
+
+                // Restore from IndexedDB on page load
+                getPhotoFromDB(inputId).then(blob => {
+                    if (blob) {
+                        icon.classList.remove('text-on-surface-variant', 'group-hover:text-tertiary');
+                        icon.textContent = 'check_circle';
+                        icon.classList.add('text-green-500');
+                        text.textContent = successText;
+                        deleteBtn.classList.remove('hidden');
+                        container.classList.add('border-green-500', 'bg-green-50');
+                    }
+                }).catch(()=>{});
             }
         };
 
@@ -1104,14 +1193,26 @@
                     const ref2CelularValue = document.getElementById('ref2_celular').value;
                     const montoValue = document.getElementById('loan-range').value;
                     
-                    // Helper to upload file
+                    // Helper to upload file (checks input first, then IndexedDB)
                     const uploadFile = async (fileInputId, fileNamePrefix) => {
                         const fileInput = document.getElementById(fileInputId);
+                        let fileToUpload = null;
+                        let ext = 'jpg';
+
                         if (fileInput && fileInput.files.length > 0) {
-                            const file = fileInput.files[0];
-                            const ext = file.name.split('.').pop();
+                            fileToUpload = fileInput.files[0];
+                            ext = fileToUpload.name.split('.').pop();
+                        } else {
+                            // Recover from IndexedDB if browser was killed
+                            try {
+                                const savedBlob = await getPhotoFromDB(fileInputId);
+                                if (savedBlob) { fileToUpload = savedBlob; ext = 'jpg'; }
+                            } catch(e) { console.error('Error reading from DB', e); }
+                        }
+
+                        if (fileToUpload) {
                             const fileName = `${fileNamePrefix}_${dniValue}_${Date.now()}.${ext}`;
-                            const { data, error } = await supabaseClient.storage.from('documentos').upload(fileName, file);
+                            const { data, error } = await supabaseClient.storage.from('documentos').upload(fileName, fileToUpload);
                             if (error) { console.error('Error uploading', fileInputId, error); return null; }
                             return data.path;
                         }
