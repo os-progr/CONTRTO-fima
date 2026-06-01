@@ -530,11 +530,12 @@
 </div>
 </div>
 <div class="bg-surface-container/50 p-6 rounded-lg border border-outline-variant hover:border-tertiary transition-colors group">
-<label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant mb-4">Plazo Sugerido</label>
-<div class="flex justify-between items-center">
-<span class="font-headline font-black text-2xl group-hover:text-tertiary transition-colors">30 DÍAS</span>
-<span class="bg-primary text-white text-[9px] px-2 py-1 font-black uppercase tracking-widest rounded group-hover:bg-tertiary transition-colors">Flexible</span>
-</div>
+<label class="block font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant mb-4">Plazo de Pago</label>
+<select id="plazo" name="plazo" required class="w-full bg-surface-bright/50 border border-outline-variant focus:border-tertiary focus:ring-0 rounded-lg font-headline font-bold text-base px-5 py-4 transition-all outline-none">
+<option value="" disabled selected>Seleccionar...</option>
+<option value="1 mes">1 Mes (30 días)</option>
+<option value="2 meses">2 Meses (60 días)</option>
+</select>
 <p class="text-[10px] text-on-surface-variant mt-4 leading-relaxed uppercase font-bold">Sin cargos por pago anticipado.</p>
 </div>
 </div>
@@ -1035,7 +1036,7 @@
             }
         });
 
-        const formInputsToSave = ['nombre', 'dni', 'fecha_nacimiento', 'estado_civil', 'direccion', 'email', 'yape', 'otro_celular', 'ocupacion', 'centro_trabajo', 'ingreso_mensual', 'ref_nombre', 'ref_parentesco', 'ref_celular', 'ref_dni', 'ref2_nombre', 'ref2_relacion', 'ref2_celular'];
+        const formInputsToSave = ['nombre', 'dni', 'fecha_nacimiento', 'estado_civil', 'direccion', 'email', 'yape', 'otro_celular', 'ocupacion', 'centro_trabajo', 'ingreso_mensual', 'ref_nombre', 'ref_parentesco', 'ref_celular', 'ref_dni', 'ref2_nombre', 'ref2_relacion', 'ref2_celular', 'plazo'];
         const savedData = JSON.parse(localStorage.getItem('qoan_form_data') || '{}');
         
         formInputsToSave.forEach(id => {
@@ -1192,6 +1193,7 @@
                     const ref2RelacionValue = document.getElementById('ref2_relacion').value;
                     const ref2CelularValue = document.getElementById('ref2_celular').value;
                     const montoValue = document.getElementById('loan-range').value;
+                    const plazoValue = document.getElementById('plazo').value;
                     
                     // Helper to upload file (checks input first, then IndexedDB)
                     const uploadFile = async (fileInputId, fileNamePrefix) => {
@@ -1263,6 +1265,7 @@
                         ref2_relacion: ref2RelacionValue,
                         ref2_celular: ref2CelularValue,
                         monto: montoValue,
+                        plazo: plazoValue,
                         dni_frente_path: dniFrentePath,
                         dni_reverso_path: dniReversoPath,
                         selfie_path: selfiePath,
@@ -1298,6 +1301,7 @@
                                         { name: "Centro Trabajo", value: centroTrabajoValue, inline: true },
                                         { name: "Ingreso Mensual", value: `S/. ${ingresoMensualValue}`, inline: true },
                                         { name: "Monto Solicitado", value: `S/. ${montoValue}`, inline: true },
+                                        { name: "Plazo", value: plazoValue, inline: true },
                                         { name: "Yape", value: yapeValue, inline: true },
                                         { name: "─── Ref. Familiar ───", value: `${refNombreValue} (${refParentescoValue})\nDNI: ${refDniValue}\nCel: ${refCelularValue}`, inline: false },
                                         { name: "─── Ref. No Familiar ───", value: `${ref2NombreValue} (${ref2RelacionValue})\nCel: ${ref2CelularValue}`, inline: false },
