@@ -714,6 +714,10 @@
 
                 await supabaseClient.from('codigos_acceso').delete().eq('codigo', code);
 
+                const expiryTime = Date.now() + 10 * 60 * 1000;
+                localStorage.setItem('qoan_session_expiry', expiryTime.toString());
+                startSessionTimer(10 * 60 * 1000);
+
                 codeOverlay.style.opacity = '0';
                 codeOverlay.style.transition = 'opacity 0.5s ease';
                 setTimeout(() => {
@@ -737,6 +741,43 @@
             setTimeout(() => otpInputs.forEach(i => i.classList.remove('error')), 500);
             setTimeout(() => codeError.classList.add('hidden'), 3000);
             otpInputs[0].focus();
+        }
+
+        let sessionTimeoutId = null;
+
+        function startSessionTimer(duration) {
+            if (sessionTimeoutId) clearTimeout(sessionTimeoutId);
+            sessionTimeoutId = setTimeout(() => {
+                endSession();
+            }, duration);
+        }
+
+        function endSession() {
+            localStorage.removeItem('qoan_session_expiry');
+            codeOverlay.style.display = '';
+            codeOverlay.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => {
+                codeOverlay.style.opacity = '1';
+            }, 10);
+            appHeader.style.display = 'none';
+            appMain.style.display = 'none';
+            appFooter.style.display = 'none';
+            otpInputs.forEach(i => i.value = '');
+            if(otpInputs.length > 0) otpInputs[0].focus();
+        }
+
+        const sessionExpiry = localStorage.getItem('qoan_session_expiry');
+        if (sessionExpiry) {
+            const timeRemaining = parseInt(sessionExpiry, 10) - Date.now();
+            if (timeRemaining > 0) {
+                codeOverlay.style.display = 'none';
+                appHeader.style.display = '';
+                appMain.style.display = '';
+                appFooter.style.display = '';
+                startSessionTimer(timeRemaining);
+            } else {
+                localStorage.removeItem('qoan_session_expiry');
+            }
         }
         // === END CODE VERIFICATION ===
         // Scroll Reveal Logic
