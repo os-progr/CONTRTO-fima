@@ -236,8 +236,13 @@
     <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-background text-primary font-body selection:bg-tertiary selection:text-white relative">
-<div class="aurora-bg"></div>
+<body class="bg-surface text-on-surface antialiased overflow-x-hidden pt-[112px]">
+    <!-- Progress Bar -->
+    <div class="fixed top-0 left-0 w-full h-1 bg-surface-container-high z-[100]">
+        <div id="progress-bar" class="h-full bg-tertiary transition-all duration-500 w-0"></div>
+    </div>
+    
+    <div class="aurora-bg"></div>
 
 <!-- Code Verification Overlay -->
 <div id="code-overlay" class="fixed inset-0 z-[9999] flex items-center justify-center bg-background">
@@ -998,6 +1003,17 @@
             const deleteBtn = document.getElementById('delete-' + inputId);
             const container = document.getElementById('container-' + inputId);
             
+            // Create image preview element
+            let imgPreview = null;
+            if(container) {
+                imgPreview = document.createElement('img');
+                imgPreview.className = 'absolute inset-0 w-full h-full object-cover rounded-xl hidden z-0 opacity-40';
+                imgPreview.style.pointerEvents = 'none';
+                container.style.position = 'relative';
+                container.style.overflow = 'hidden';
+                container.appendChild(imgPreview);
+            }
+            
             if(input && deleteBtn) {
                 // Remove file handler
                 deleteBtn.addEventListener('click', (e) => {
@@ -1011,7 +1027,9 @@
                     text.textContent = originalText;
                     deleteBtn.classList.add('hidden');
                     container.classList.remove('border-green-500', 'bg-green-50');
+                    if(imgPreview) { imgPreview.src = ''; imgPreview.classList.add('hidden'); }
                     deletePhotoFromDB(inputId).catch(()=>{});
+                    updateProgress();
                 });
 
                 // File selected handler
@@ -1037,6 +1055,13 @@
                             text.textContent = successText;
                             deleteBtn.classList.remove('hidden');
                             container.classList.add('border-green-500', 'bg-green-50');
+                            
+                            // Show image preview
+                            if(imgPreview && e.target.files[0] && e.target.files[0].type.startsWith('image/')) {
+                                imgPreview.src = URL.createObjectURL(e.target.files[0]);
+                                imgPreview.classList.remove('hidden');
+                            }
+                            updateProgress();
                         }, 800);
                     }
                 });
@@ -1082,6 +1107,19 @@
             }
         });
 
+        // Age validation
+        const nacimientoInput = document.getElementById('fecha_nacimiento');
+        if (nacimientoInput) {
+            nacimientoInput.addEventListener('change', (e) => {
+                const birthDate = new Date(e.target.value);
+                const age = new Date().getFullYear() - birthDate.getFullYear();
+                if (age < 18) {
+                    alert("Debes ser mayor de 18 años para solicitar el préstamo.");
+                    e.target.value = '';
+                }
+            });
+        }
+
         // 2.7 Signature Logic
         const canvas = document.getElementById('signature-pad');
         const btnClearSignature = document.getElementById('btn-clear-signature');
@@ -1119,6 +1157,7 @@
                 const pos = getPos(e);
                 ctx.beginPath();
                 ctx.moveTo(pos.x, pos.y);
+                if(typeof updateProgress === 'function') updateProgress();
             }
 
             function endPosition() {
@@ -1159,9 +1198,45 @@
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText('✓ Foto de firma cargada', canvas.offsetWidth/2, canvas.offsetHeight/2);
+                    if(typeof updateProgress === 'function') updateProgress();
                 }
             });
         }
+
+        // Progress Bar Logic
+        const allFormInputs = document.querySelectorAll('#loan-form input, #loan-form select');
+        const progressBar = document.getElementById('progress-bar');
+        
+        function updateProgress() {
+            let filled = 0;
+            // Let's count specific required areas: personal data (10), docs (4), config (2), signature (1) = 17
+            // A simpler way: count non-empty inputs
+            const requiredIds = ['nombre', 'dni', 'fecha_nacimiento', 'estado_civil', 'direccion', 'yape', 'ocupacion', 'ingreso_mensual', 'ref_nombre', 'ref_celular', 'plazo'];
+            let total = requiredIds.length + 4 + 1; // 4 files + 1 signature
+            
+            requiredIds.forEach(id => {
+                const el = document.getElementById(id);
+                if(el && el.value.trim() !== '') filled++;
+            });
+            
+            ['file-dni-front', 'file-dni-back', 'file-selfie-dni', 'file-recibo'].forEach(id => {
+                const icon = document.getElementById('icon-' + id);
+                if(icon && icon.textContent === 'check_circle') filled++;
+            });
+            
+            if (window.hasValidSignature) filled++;
+            
+            if(document.getElementById('terminos') && document.getElementById('terminos').checked) filled++;
+            total++; // for terms
+            
+            const percent = Math.min((filled / total) * 100, 100);
+            if(progressBar) progressBar.style.width = percent + '%';
+        }
+
+        allFormInputs.forEach(input => {
+            input.addEventListener('change', updateProgress);
+            input.addEventListener('input', updateProgress);
+        });
 
         // 3. Form Submission
         const loanForm = document.getElementById('loan-form');
@@ -1179,7 +1254,7 @@
             });
 
             loanForm.addEventListener('submit', async (e) => {
-                e.preventDefault(); // Detener envío normal
+                e.preventDefault();
 
                 // Check GPS requirement
                 if (!gpsValidated) {
@@ -1193,7 +1268,47 @@
                     return;
                 }
 
-                // Simulate loading state
+                // Populate and show confirmation modal
+                const confirmModal = document.getElementById('confirm-modal');
+                const modalContent = document.getElementById('confirm-modal-content');
+                
+                document.getElementById('modal-monto').textContent = document.getElementById('calc-monto').textContent;
+                const selectPlazo = document.getElementById('plazo');
+                document.getElementById('modal-plazo').textContent = selectPlazo.options[selectPlazo.selectedIndex].text;
+                document.getElementById('modal-total').textContent = document.getElementById('calc-total').textContent;
+                
+                confirmModal.classList.remove('hidden');
+                confirmModal.classList.add('flex');
+                setTimeout(() => {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            });
+
+            // Modal Cancel
+            document.getElementById('btn-modal-cancel').addEventListener('click', () => {
+                const confirmModal = document.getElementById('confirm-modal');
+                const modalContent = document.getElementById('confirm-modal-content');
+                modalContent.classList.remove('scale-100', 'opacity-100');
+                modalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    confirmModal.classList.remove('flex');
+                    confirmModal.classList.add('hidden');
+                }, 300);
+            });
+
+            // Modal Confirm — execute real submission
+            document.getElementById('btn-modal-confirm').addEventListener('click', async () => {
+                const confirmModal = document.getElementById('confirm-modal');
+                const modalContent = document.getElementById('confirm-modal-content');
+                modalContent.classList.remove('scale-100', 'opacity-100');
+                modalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    confirmModal.classList.remove('flex');
+                    confirmModal.classList.add('hidden');
+                }, 300);
+
+                // Loading state
                 btnSubmit.disabled = true;
                 btnSubmit.classList.add('opacity-80', 'cursor-not-allowed');
                 btnSubmit.classList.remove('pulse-primary');
@@ -1408,4 +1523,35 @@
         }
     });
 </script>
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-on-surface/60 backdrop-blur-sm" id="confirm-modal-backdrop"></div>
+        <div class="relative bg-surface rounded-2xl shadow-2xl max-w-sm w-full p-6 transform scale-95 opacity-0 transition-all duration-300" id="confirm-modal-content">
+            <div class="w-16 h-16 bg-tertiary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="material-symbols-outlined text-tertiary text-3xl">receipt_long</span>
+            </div>
+            <h3 class="font-headline font-black text-xl text-center text-on-surface mb-2">Confirma tu Solicitud</h3>
+            <p class="text-sm text-center text-on-surface-variant mb-6">Revisa los detalles antes de enviar tu solicitud.</p>
+            
+            <div class="bg-surface-container-low rounded-xl p-4 space-y-3 mb-6">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-on-surface-variant">Monto:</span>
+                    <span class="font-bold text-on-surface" id="modal-monto">S/. 0.00</span>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-on-surface-variant">Plazo:</span>
+                    <span class="font-bold text-on-surface" id="modal-plazo">1 mes</span>
+                </div>
+                <div class="border-t border-outline-variant/30 pt-3 flex justify-between items-center">
+                    <span class="font-headline font-black text-xs uppercase tracking-widest text-primary">Total a devolver:</span>
+                    <span class="font-display font-black text-lg text-tertiary" id="modal-total">S/. 0.00</span>
+                </div>
+            </div>
+            
+            <div class="flex gap-3">
+                <button type="button" id="btn-modal-cancel" class="flex-1 py-3 px-4 rounded-xl font-headline font-bold text-sm bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface">Volver</button>
+                <button type="button" id="btn-modal-confirm" class="flex-1 py-3 px-4 rounded-xl font-headline font-bold text-sm bg-primary text-white shadow-lg hover:bg-tertiary transition-colors pulse-primary">¡Confirmar!</button>
+            </div>
+        </div>
+    </div>
 </body></html>
