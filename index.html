@@ -537,14 +537,27 @@
 <option value="2 meses">2 Meses (60 días)</option>
 </select>
 <div class="mt-4 p-4 bg-tertiary/10 rounded-lg border border-tertiary/20">
-    <p class="text-xs text-primary font-bold mb-2 uppercase tracking-widest">Condiciones del Crédito:</p>
-    <ul class="text-[10px] text-on-surface-variant leading-relaxed font-bold space-y-1">
-        <li>• Interés total: <span class="text-tertiary">15%</span></li>
-        <li>• Interés por día: <span class="text-tertiary">S/. 2.50</span></li>
-        <li>• Mora por día de atraso: <span class="text-error">S/. 1.00</span></li>
+    <p class="text-xs text-primary font-bold mb-3 uppercase tracking-widest">Resumen del Crédito</p>
+    <div class="space-y-2 mb-3 border-b border-outline-variant/30 pb-3">
+        <div class="flex justify-between items-center text-sm font-medium">
+            <span class="text-on-surface-variant">Monto Solicitado:</span>
+            <span class="text-primary" id="calc-monto">S/. 300.00</span>
+        </div>
+        <div class="flex justify-between items-center text-sm font-medium">
+            <span class="text-on-surface-variant">Interés (15%):</span>
+            <span class="text-primary" id="calc-interes">S/. 45.00</span>
+        </div>
+    </div>
+    <div class="flex justify-between items-center mb-3">
+        <span class="font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant">Total a Devolver</span>
+        <span class="font-display font-black text-xl text-tertiary" id="calc-total">S/. 345.00</span>
+    </div>
+    <ul class="text-[9px] text-on-surface-variant leading-relaxed space-y-1">
+        <li>• Interés por día: <span class="font-bold text-tertiary">S/. 2.50</span></li>
+        <li>• Mora por atraso: <span class="font-bold text-error">S/. 1.00 diario</span></li>
     </ul>
 </div>
-<p class="text-[10px] text-on-surface-variant mt-4 leading-relaxed uppercase font-bold">Sin cargos por pago anticipado.</p>
+<p class="text-[10px] text-on-surface-variant mt-4 leading-relaxed uppercase font-bold text-center">Sin cargos por pago anticipado.</p>
 </div>
 </div>
 </div>
@@ -878,17 +891,32 @@
         window.addEventListener('scroll', revealOnScroll);
         revealOnScroll(); // Initial check
 
-        // Loan Range Sync
+        // Loan Range Sync and Calculator
         const loanSlider = document.getElementById('loan-range');
         const loanValueDisplay = document.getElementById('range-val');
+        const calcMonto = document.getElementById('calc-monto');
+        const calcInteres = document.getElementById('calc-interes');
+        const calcTotal = document.getElementById('calc-total');
         
         loanSlider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
             const formatted = new Intl.NumberFormat('es-PE', {
                 style: 'currency',
                 currency: 'PEN',
                 maximumFractionDigits: 0
-            }).format(e.target.value);
+            }).format(val);
+            
             loanValueDisplay.textContent = formatted.replace('PEN', 'S/.');
+            
+            // Calculator logic (15% flat interest)
+            const interes = val * 0.15;
+            const total = val + interes;
+            
+            const formatCurrency = (num) => new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN', minimumFractionDigits: 2 }).format(num).replace('PEN', 'S/.');
+            
+            calcMonto.textContent = formatCurrency(val);
+            calcInteres.textContent = formatCurrency(interes);
+            calcTotal.textContent = formatCurrency(total);
             
             // Visual feedback on the slider value
             loanValueDisplay.style.transform = 'scale(1.1)';
@@ -1380,4 +1408,10 @@
         }
     });
 </script>
+<!-- Floating WhatsApp Button -->
+<a href="https://wa.me/51900779111" target="_blank" class="fixed bottom-6 right-6 z-50 bg-[#25D366] text-white p-4 rounded-full shadow-[0_4px_12px_rgba(37,211,102,0.4)] hover:bg-[#1EBE5D] hover:scale-110 transition-all duration-300 flex items-center justify-center" style="animation: pulse-glow 2s infinite;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-whatsapp" viewBox="0 0 16 16">
+        <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/>
+    </svg>
+</a>
 </body></html>
