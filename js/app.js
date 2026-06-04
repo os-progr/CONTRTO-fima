@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function validateSelfieWithDNI(imageSource) {
         // --- Paso 1: Redimensionar imagen para detección confiable ---
         const analysisCanvas = document.createElement('canvas');
-        const MAX_DIM = 640;
+        const MAX_DIM = 480; // Reduced for faster mobile processing
         let srcW, srcH;
 
         if (imageSource instanceof HTMLVideoElement) {
@@ -642,21 +642,33 @@ document.addEventListener('DOMContentLoaded', () => {
         btnCaptureCamera.addEventListener('click', async () => {
             if (!cameraStream) return;
             
-            // Capture frame
+            // === IMMEDIATE VISUAL FEEDBACK ===
+            // 1) Flash effect — instant
+            const flashOverlay = document.getElementById('capture-flash-overlay');
+            if (flashOverlay) {
+                flashOverlay.classList.add('capture-flash');
+                setTimeout(() => flashOverlay.classList.remove('capture-flash'), 400);
+            }
+            
+            // 2) Capture frame IMMEDIATELY (before any async work)
             cameraCanvas.width = cameraVideo.videoWidth;
             cameraCanvas.height = cameraVideo.videoHeight;
             const ctx = cameraCanvas.getContext('2d');
-            // Check if facing mode is user to mirror the canvas correctly if needed, but drawing as is is usually fine.
             ctx.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
             
+            // 3) Show processing state right away
             btnCaptureCamera.disabled = true;
-            btnCaptureCamera.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Analizando...';
+            btnCloseCamera.disabled = true;
+            btnCaptureCamera.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Procesando...';
+
+            // Small yield to let the UI update before heavy processing
+            await new Promise(r => setTimeout(r, 50));
 
             try {
-                // Validación IA: Rostro + DNI
+                // === AI VALIDATION (runs after UI has updated) ===
                 if (typeof faceapi !== 'undefined' && faceApiLoaded) {
                     try {
-                        btnCaptureCamera.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Analizando rostro y DNI...';
+                        btnCaptureCamera.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Analizando...';
                         const result = await validateSelfieWithDNI(cameraCanvas);
 
                         if (!result.valid) {
@@ -679,6 +691,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                             alert(msg);
                             btnCaptureCamera.disabled = false;
+                            btnCloseCamera.disabled = false;
                             btnCaptureCamera.innerHTML = '<span class="material-symbols-outlined">photo_camera</span> Capturar';
                             return;
                         }
@@ -687,19 +700,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                // Convert canvas to blob and save
+                // === SAVE PHOTO ===
+                btnCaptureCamera.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Guardando...';
+                
                 cameraCanvas.toBlob(async (blob) => {
                     if (blob) {
                         const file = new File([blob], "selfie_cam.jpg", { type: "image/jpeg" });
                         
-                        // Fake visual update
                         const icon = document.getElementById('icon-file-selfie-dni');
                         const text = document.getElementById('text-file-selfie-dni');
                         const container = document.getElementById('container-file-selfie-dni');
                         const deleteBtn = document.getElementById('delete-file-selfie-dni');
                         const hiddenInput = document.getElementById('file-selfie-dni');
 
-                        // Put file in hidden input so it works with progress bar
                         const dataTransfer = new DataTransfer();
                         dataTransfer.items.add(file);
                         if (hiddenInput) {
@@ -709,7 +722,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         icon.textContent = 'sync';
                         icon.classList.add('animate-spin', 'text-tertiary');
                         
-                        // Process and save
                         const compressed = await compressImage(file);
                         await savePhotoToDB('file-selfie-dni', compressed);
 
@@ -720,7 +732,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         deleteBtn.classList.remove('hidden');
                         container.classList.add('border-green-500', 'bg-green-50');
 
-                        // Set preview image
                         let imgPreview = container.querySelector('img.preview-img');
                         if (!imgPreview) {
                             imgPreview = document.createElement('img');
@@ -732,17 +743,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         imgPreview.classList.remove('hidden');
                         
                         updateProgress();
-
-                        // Close modal
                         btnCloseCamera.click();
                     }
+                    btnCaptureCamera.disabled = false;
+                    btnCloseCamera.disabled = false;
+                    btnCaptureCamera.innerHTML = '<span class="material-symbols-outlined">photo_camera</span> Capturar';
                 }, 'image/jpeg', 0.85);
 
             } catch (err) {
                 console.error("Error capturando foto", err);
                 alert("Hubo un error al procesar la foto.");
-            } finally {
                 btnCaptureCamera.disabled = false;
+                btnCloseCamera.disabled = false;
                 btnCaptureCamera.innerHTML = '<span class="material-symbols-outlined">photo_camera</span> Capturar';
             }
         });

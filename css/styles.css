@@ -163,6 +163,98 @@ body {
     box-shadow: 4px 4px 0px #1a1a1a;
 }
 
+/* === Mobile: OTP & Verification Overlay === */
+@media (max-width: 480px) {
+    .otp-input {
+        width: 2.6rem;
+        height: 3.2rem;
+        font-size: 1.2rem;
+        border-width: 2px;
+        box-shadow: 3px 3px 0px #1a1a1a;
+    }
+    .otp-input:focus {
+        transform: translate(-1px, -1px);
+        box-shadow: 4px 4px 0px #ffcc00;
+    }
+    #code-overlay .premium-glass {
+        padding: 1.5rem;
+    }
+    #code-overlay .text-5xl {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    /* Verification overlay — ensure proper centering on mobile */
+    #code-overlay {
+        padding: 1rem;
+        align-items: center;
+    }
+    #code-overlay > div {
+        max-width: 100%;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    /* Form sections — less padding on mobile */
+    .premium-glass {
+        padding: 1.25rem !important;
+    }
+
+    /* Hero section mobile fixes */
+    .hero-title-shadow {
+        text-shadow: 2px 2px 0px #ffcc00, 4px 4px 0px #0055ff;
+    }
+
+    /* Camera modal — full width on mobile */
+    #camera-modal > div:last-child,
+    #instruction-modal > div:last-child {
+        max-width: 100%;
+        margin: 0.5rem;
+        border-radius: 1rem;
+    }
+
+    /* File upload containers — adjust for 2-column mobile */
+    #loan-form .grid.grid-cols-2.lg\\:grid-cols-4 {
+        gap: 0.5rem;
+    }
+    #loan-form .grid.grid-cols-2.lg\\:grid-cols-4 > * {
+        padding: 0.75rem;
+    }
+
+    /* Buttons larger touch targets */
+    #btn-submit {
+        padding-top: 1.25rem;
+        padding-bottom: 1.25rem;
+        font-size: 1rem;
+    }
+
+    /* Slider thumb larger on mobile */
+    .custom-slider::-webkit-slider-thumb {
+        height: 40px;
+        width: 40px;
+        margin-top: -18px;
+    }
+}
+
+/* === Spinner animation for capture button === */
+@keyframes spin-fast {
+    to { transform: rotate(360deg); }
+}
+.animate-spin-fast {
+    animation: spin-fast 0.6s linear infinite;
+}
+
+/* === Capture flash effect === */
+@keyframes capture-flash {
+    0% { opacity: 0; }
+    30% { opacity: 1; }
+    100% { opacity: 0; }
+}
+.capture-flash {
+    animation: capture-flash 0.4s ease-out forwards;
+}
+
 /* === Accessibility: Reduced Motion === */
 @media (prefers-reduced-motion: reduce) {
     .reveal, .btn-shimmer::after, .icon-float, .group:hover .icon-float {

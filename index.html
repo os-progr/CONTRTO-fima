@@ -75,14 +75,14 @@
     <div class="aurora-bg"></div>
 
 <!-- Code Verification Overlay -->
-<div id="code-overlay" class="fixed inset-0 z-[9999] flex items-center justify-center bg-background">
-    <div class="w-full max-w-md px-6">
-        <div class="text-center mb-10">
-            <span class="font-headline text-5xl font-black tracking-tighter text-primary uppercase">QOAN</span>
-            <p class="font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant mt-4">Ingresa tu código de acceso</p>
+<div id="code-overlay" class="fixed inset-0 z-[9999] flex items-center justify-center bg-background px-4">
+    <div class="w-full max-w-md">
+        <div class="text-center mb-6 sm:mb-10">
+            <span class="font-headline text-4xl sm:text-5xl font-black tracking-tighter text-primary uppercase">QOAN</span>
+            <p class="font-headline font-bold uppercase text-[10px] tracking-widest text-on-surface-variant mt-3 sm:mt-4">Ingresa tu código de acceso</p>
         </div>
-        <div class="premium-glass p-8 md:p-10 rounded-xl">
-            <div class="flex justify-center gap-2 md:gap-3 mb-6" id="otp-container">
+        <div class="premium-glass p-5 sm:p-8 md:p-10 rounded-xl">
+            <div class="flex justify-center gap-[6px] sm:gap-2 md:gap-3 mb-6" id="otp-container">
                 <input type="text" maxlength="1" class="otp-input" data-index="0" autocomplete="off" inputmode="text"/>
                 <input type="text" maxlength="1" class="otp-input" data-index="1" autocomplete="off" inputmode="text"/>
                 <input type="text" maxlength="1" class="otp-input" data-index="2" autocomplete="off" inputmode="text"/>
@@ -96,9 +96,10 @@
                 <span id="verify-text">Verificar Código</span>
             </button>
         </div>
-        <p class="text-center text-[10px] text-on-surface-variant uppercase tracking-widest mt-6 font-bold">Código de un solo uso</p>
+        <p class="text-center text-[10px] text-on-surface-variant uppercase tracking-widest mt-4 sm:mt-6 font-bold">Código de un solo uso</p>
     </div>
 </div>
+
 <header id="app-header" style="display:none" class="w-full border-b border-outline-variant bg-white/80 backdrop-blur-md z-50 sticky top-0">
 <nav class="flex justify-between items-center w-full px-8 py-5 max-w-[1440px] mx-auto">
 <div class="flex items-center gap-12">
@@ -532,13 +533,16 @@
     </div>
 
     <!-- Camera Modal -->
-    <div id="camera-modal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4">
+    <div id="camera-modal" class="fixed inset-0 z-[200] hidden items-center justify-center p-2 sm:p-4">
         <div class="absolute inset-0 bg-on-surface/90 backdrop-blur-sm" id="camera-modal-backdrop"></div>
-        <div class="relative bg-surface rounded-2xl shadow-2xl max-w-sm w-full p-4 transform scale-95 opacity-0 transition-all duration-300 flex flex-col" id="camera-modal-content">
-            <h3 class="font-headline font-black text-lg text-center text-on-surface mb-4 uppercase tracking-widest">Tomar Selfie con DNI</h3>
-            <div class="relative w-full rounded-xl overflow-hidden bg-black aspect-[3/4] flex flex-col items-center justify-center mb-4">
+        <div class="relative bg-surface rounded-2xl shadow-2xl max-w-sm w-full p-3 sm:p-4 transform scale-95 opacity-0 transition-all duration-300 flex flex-col max-h-[95vh]" id="camera-modal-content">
+            <h3 class="font-headline font-black text-base sm:text-lg text-center text-on-surface mb-3 sm:mb-4 uppercase tracking-widest">Tomar Selfie con DNI</h3>
+            <div class="relative w-full rounded-xl overflow-hidden bg-black aspect-[3/4] flex flex-col items-center justify-center mb-3 sm:mb-4">
                 <video id="camera-video" class="w-full h-full object-cover transform scale-x-[-1] absolute inset-0" autoplay playsinline></video>
                 <canvas id="camera-canvas" class="hidden"></canvas>
+                
+                <!-- Flash overlay for capture feedback -->
+                <div id="capture-flash-overlay" class="absolute inset-0 bg-white z-30 pointer-events-none opacity-0"></div>
                 
                 <!-- Botón cambiar cámara -->
                 <button type="button" id="btn-flip-camera" class="absolute top-3 right-3 z-10 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center backdrop-blur hover:bg-black/80 transition-all cursor-pointer pointer-events-auto">
@@ -549,21 +553,21 @@
                 <div class="absolute inset-0 pointer-events-none bg-black/40"></div>
 
                 <!-- Guías transparentes (recortes) -->
-                <div class="absolute inset-0 pointer-events-none flex flex-col items-center justify-center gap-4 z-10">
+                <div class="absolute inset-0 pointer-events-none flex flex-col items-center justify-center gap-3 sm:gap-4 z-10">
                     <!-- Guía de Rostro -->
-                    <div class="relative w-40 h-52 border-2 border-white/80 rounded-[100%] border-dashed flex items-center justify-center overflow-visible" style="box-shadow: 0 0 0 2000px rgba(0,0,0,0.4);">
-                        <span class="absolute -top-6 text-white text-[10px] font-bold uppercase tracking-widest drop-shadow-md">Rostro</span>
+                    <div class="relative w-32 h-40 sm:w-40 sm:h-52 border-2 border-white/80 rounded-[100%] border-dashed flex items-center justify-center overflow-visible" style="box-shadow: 0 0 0 2000px rgba(0,0,0,0.4);">
+                        <span class="absolute -top-5 sm:-top-6 text-white text-[9px] sm:text-[10px] font-bold uppercase tracking-widest drop-shadow-md">Rostro</span>
                     </div>
                     <!-- Guía de DNI -->
-                    <div class="relative w-48 h-28 border-2 border-white/80 rounded-xl border-dashed flex items-center justify-center bg-transparent">
-                        <span class="text-white/80 text-[10px] font-bold uppercase tracking-widest bg-black/30 px-2 py-1 rounded">DNI</span>
+                    <div class="relative w-40 h-24 sm:w-48 sm:h-28 border-2 border-white/80 rounded-xl border-dashed flex items-center justify-center bg-transparent">
+                        <span class="text-white/80 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest bg-black/30 px-2 py-1 rounded">DNI</span>
                     </div>
                 </div>
             </div>
-            <div class="flex gap-3">
-                <button type="button" id="btn-close-camera" class="flex-1 py-3 px-4 rounded-xl font-headline font-bold text-sm bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface">Cancelar</button>
-                <button type="button" id="btn-capture-camera" class="flex-1 py-3 px-4 rounded-xl font-headline font-bold text-sm bg-primary text-white shadow-lg hover:bg-tertiary transition-colors pulse-primary flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined">photo_camera</span>
+            <div class="flex gap-2 sm:gap-3">
+                <button type="button" id="btn-close-camera" class="flex-1 py-3 sm:py-3 px-3 sm:px-4 rounded-xl font-headline font-bold text-xs sm:text-sm bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface">Cancelar</button>
+                <button type="button" id="btn-capture-camera" class="flex-1 py-3 sm:py-3 px-3 sm:px-4 rounded-xl font-headline font-bold text-xs sm:text-sm bg-primary text-white shadow-lg hover:bg-tertiary transition-colors pulse-primary flex items-center justify-center gap-1 sm:gap-2">
+                    <span class="material-symbols-outlined text-lg sm:text-xl">photo_camera</span>
                     Capturar
                 </button>
             </div>
