@@ -1,0 +1,173 @@
+/* ============================================
+   QOAN — Neo-Brutalist Design System
+   Bauhaus-inspired. Raw, bold, unapologetic.
+   ============================================ */
+
+/* === Base === */
+body {
+    background-color: #f5f0e8;
+    background-image: radial-gradient(#1a1a1a 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48;
+}
+
+/* === Components: Premium Glass (Brutalist Cards) === */
+.premium-glass {
+    background: #ffffff;
+    border: 3px solid #1a1a1a;
+    box-shadow: 6px 6px 0px #1a1a1a;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    backdrop-filter: none;
+}
+.premium-glass:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0px #1a1a1a;
+}
+
+/* === Components: Hero Title === */
+.hero-title-shadow {
+    text-shadow: 4px 4px 0px #ffcc00, 8px 8px 0px #0055ff;
+}
+
+/* === Components: Range Slider === */
+.custom-slider::-webkit-slider-runnable-track {
+    background: #1a1a1a;
+    height: 8px;
+    border: 2px solid #1a1a1a;
+    border-radius: 0;
+}
+.custom-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 32px;
+    width: 32px;
+    background: #ffcc00;
+    border: 3px solid #1a1a1a;
+    border-radius: 0;
+    margin-top: -14px;
+    box-shadow: 4px 4px 0px #1a1a1a;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.custom-slider::-webkit-slider-thumb:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px #1a1a1a;
+}
+.custom-slider::-webkit-slider-thumb:active {
+    transform: translate(4px, 4px);
+    box-shadow: 0px 0px 0px #1a1a1a;
+}
+
+/* === Components: Buttons === */
+.premium-button-hover {
+    border: 3px solid #1a1a1a;
+    box-shadow: 6px 6px 0px #1a1a1a;
+}
+.premium-button-hover:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 4px 4px 0px #1a1a1a;
+}
+.premium-button-hover:active {
+    transform: translate(6px, 6px) !important;
+    box-shadow: 0px 0px 0px #1a1a1a !important;
+}
+
+/* === Animations: Aurora (disabled for brutalism) === */
+.aurora-bg {
+    display: none;
+}
+
+/* === Animations: Button Shimmer === */
+.btn-shimmer {
+    position: relative;
+    overflow: hidden;
+}
+.btn-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.4);
+    transform: skewX(-20deg);
+    animation: brutal-shine 3s infinite;
+}
+@keyframes brutal-shine {
+    0% { left: -100%; }
+    20% { left: 200%; }
+    100% { left: 200%; }
+}
+
+/* === Components: OTP Code Inputs === */
+.otp-input {
+    width: 3.5rem;
+    height: 4rem;
+    text-align: center;
+    font-family: 'Space Grotesk';
+    font-weight: 800;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    background: #ffffff;
+    border: 3px solid #1a1a1a;
+    border-radius: 0;
+    outline: none;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    box-shadow: 4px 4px 0px #1a1a1a;
+    caret-color: #e63b2e;
+}
+.otp-input:focus {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px #ffcc00;
+    border-color: #1a1a1a;
+}
+.otp-input.error {
+    border-color: #1a1a1a;
+    background-color: #e63b2e;
+    color: #ffffff;
+    animation: brutal-shake 0.3s ease;
+}
+@keyframes brutal-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px) rotate(-2deg); }
+    75% { transform: translateX(10px) rotate(2deg); }
+}
+
+/* === Animations: Scroll Reveal === */
+.reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.4s cubic-bezier(0, 0, 0, 1);
+}
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* === Components: Input Focus Glow === */
+.input-glow:focus-within {
+    box-shadow: 4px 4px 0px #0055ff !important;
+    transform: translate(-2px, -2px);
+    transition: all 0.1s ease;
+}
+
+/* === Components: Icon Float === */
+.icon-float {
+    transition: transform 0.2s cubic-bezier(0, 0, 0, 1);
+    border: 2px solid #1a1a1a;
+    box-shadow: 2px 2px 0px #1a1a1a;
+}
+.group:hover .icon-float {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0px #1a1a1a;
+}
+
+/* === Accessibility: Reduced Motion === */
+@media (prefers-reduced-motion: reduce) {
+    .reveal, .btn-shimmer::after, .icon-float, .group:hover .icon-float {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+    }
+}

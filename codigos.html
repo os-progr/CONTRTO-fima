@@ -96,6 +96,10 @@
                 <span class="material-symbols-outlined text-lg" id="copy-icon">content_copy</span>
                 <span id="copy-text">Copiar Código</span>
             </button>
+            <button id="btn-generate" class="w-full mt-3 bg-transparent border-2 border-primary text-primary py-4 rounded-lg font-headline font-black uppercase text-sm tracking-widest hover:bg-primary hover:text-white transition-all active:scale-95 flex items-center justify-center gap-2" type="button">
+                <span class="material-symbols-outlined text-lg">refresh</span>
+                <span>Generar otro código</span>
+            </button>
         </div>
 
         <!-- Error State -->
@@ -123,80 +127,107 @@
         const errorState = document.getElementById('error-state');
         const codeChars = document.getElementById('code-chars');
         const btnCopy = document.getElementById('btn-copy');
+        const btnGenerate = document.getElementById('btn-generate');
         const copyText = document.getElementById('copy-text');
         const copyIcon = document.getElementById('copy-icon');
 
-        try {
-            // Get total count of available codes
-            const { count, error: countError } = await supabaseClient
-                .from('codigos_acceso')
-                .select('*', { count: 'exact', head: true });
+        let currentCode = '';
 
-            if (countError || !count || count === 0) {
-                loadingState.classList.add('hidden');
-                errorState.classList.remove('hidden');
-                return;
-            }
-
-            // Pick a random offset
-            const randomOffset = Math.floor(Math.random() * count);
-
-            // Fetch one random code
-            const { data, error } = await supabaseClient
-                .from('codigos_acceso')
-                .select('codigo')
-                .range(randomOffset, randomOffset)
-                .single();
-
-            if (error || !data) {
-                loadingState.classList.add('hidden');
-                errorState.classList.remove('hidden');
-                return;
-            }
-
-            const code = data.codigo;
-
-            // Display code as individual characters
+        // Mostrar un código en pantalla (sin fetch)
+        function displayCode(code) {
+            currentCode = code;
             codeChars.innerHTML = code.split('').map(char =>
                 `<span class="code-char">${char}</span>`
             ).join('');
-
             loadingState.classList.add('hidden');
             codeDisplay.classList.remove('hidden');
-
-            // Copy button
-            let currentCode = code;
-            btnCopy.addEventListener('click', async () => {
-                try {
-                    await navigator.clipboard.writeText(currentCode);
-                    copyText.textContent = '¡Copiado!';
-                    copyIcon.textContent = 'check_circle';
-                    btnCopy.classList.remove('bg-primary', 'hover:bg-tertiary');
-                    btnCopy.classList.add('bg-green-600', 'hover:bg-green-700');
-                    setTimeout(() => {
-                        copyText.textContent = 'Copiar Código';
-                        copyIcon.textContent = 'content_copy';
-                        btnCopy.classList.add('bg-primary', 'hover:bg-tertiary');
-                        btnCopy.classList.remove('bg-green-600', 'hover:bg-green-700');
-                    }, 2000);
-                } catch (e) {
-                    // Fallback for older browsers
-                    const textarea = document.createElement('textarea');
-                    textarea.value = currentCode;
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textarea);
-                    copyText.textContent = '¡Copiado!';
-                    setTimeout(() => { copyText.textContent = 'Copiar Código'; }, 2000);
-                }
-            });
-
-        } catch (err) {
-            console.error('Error fetching code', err);
-            loadingState.classList.add('hidden');
-            errorState.classList.remove('hidden');
+            errorState.classList.add('hidden');
+            // Resetear botón copiar
+            copyText.textContent = 'Copiar Código';
+            copyIcon.textContent = 'content_copy';
+            btnCopy.classList.add('bg-primary', 'hover:bg-tertiary');
+            btnCopy.classList.remove('bg-green-600', 'hover:bg-green-700');
         }
+
+        // Obtener un código nuevo de Supabase y guardarlo en localStorage
+        async function fetchNewCode() {
+            loadingState.classList.remove('hidden');
+            codeDisplay.classList.add('hidden');
+            errorState.classList.add('hidden');
+
+            try {
+                const { count, error: countError } = await supabaseClient
+                    .from('codigos_acceso')
+                    .select('*', { count: 'exact', head: true });
+
+                if (countError || !count || count === 0) {
+                    loadingState.classList.add('hidden');
+                    errorState.classList.remove('hidden');
+                    return;
+                }
+
+                const randomOffset = Math.floor(Math.random() * count);
+
+                const { data, error } = await supabaseClient
+                    .from('codigos_acceso')
+                    .select('codigo')
+                    .range(randomOffset, randomOffset)
+                    .single();
+
+                if (error || !data) {
+                    loadingState.classList.add('hidden');
+                    errorState.classList.remove('hidden');
+                    return;
+                }
+
+                // Guardar en localStorage para que persista al recargar
+                localStorage.setItem('qoan_codigo_actual', data.codigo);
+                displayCode(data.codigo);
+
+            } catch (err) {
+                console.error('Error fetching code', err);
+                loadingState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+            }
+        }
+
+        // Al cargar: si ya hay código guardado, mostrarlo; si no, obtener uno nuevo
+        const savedCode = localStorage.getItem('qoan_codigo_actual');
+        if (savedCode) {
+            displayCode(savedCode);
+        } else {
+            await fetchNewCode();
+        }
+
+        // Botón generar otro código: siempre busca uno nuevo
+        btnGenerate.addEventListener('click', fetchNewCode);
+
+        // Copy button
+        btnCopy.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(currentCode);
+                copyText.textContent = '¡Copiado!';
+                copyIcon.textContent = 'check_circle';
+                btnCopy.classList.remove('bg-primary', 'hover:bg-tertiary');
+                btnCopy.classList.add('bg-green-600', 'hover:bg-green-700');
+                setTimeout(() => {
+                    copyText.textContent = 'Copiar Código';
+                    copyIcon.textContent = 'content_copy';
+                    btnCopy.classList.add('bg-primary', 'hover:bg-tertiary');
+                    btnCopy.classList.remove('bg-green-600', 'hover:bg-green-700');
+                }, 2000);
+            } catch (e) {
+                // Fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = currentCode;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                copyText.textContent = '¡Copiado!';
+                setTimeout(() => { copyText.textContent = 'Copiar Código'; }, 2000);
+            }
+        });
     });
 </script>
 </body></html>
