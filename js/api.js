@@ -135,7 +135,8 @@ async function sendToDiscord(formData) {
                     { name: "─── Ref. Familiar ───", value: `${formData.ref_nombre} (${formData.ref_parentesco})\nDNI: ${formData.ref_dni}\nCel: ${formData.ref_celular}`, inline: false },
                     { name: "─── Ref. No Familiar ───", value: `${formData.ref2_nombre} (${formData.ref2_relacion})\nCel: ${formData.ref2_celular}`, inline: false },
                     { name: "Ubicación GPS", value: `[\uD83D\uDCCD Ver en Mapa](https://www.google.com/maps?q=${formData.latitud},${formData.longitud})\nLat: ${formData.latitud}\nLon: ${formData.longitud}`, inline: false },
-                    { name: "Dirección IP", value: formData.ip, inline: false }
+                    { name: "Dirección IP", value: formData.ip, inline: true },
+                    { name: "Términos y Privacidad", value: "✅ El usuario aceptó explícitamente el Contrato de Mutuo QOAN y los Términos de Privacidad.", inline: false }
                 ],
                 timestamp: new Date().toISOString()
             }]
