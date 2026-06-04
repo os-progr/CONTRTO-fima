@@ -784,24 +784,25 @@ document.addEventListener('DOMContentLoaded', () => {
                         btnCaptureCamera.classList.add('bg-green-500');
                         btnCaptureCamera.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Foto Confirmada';
                         
-                        setTimeout(() => {
-                            btnCloseCamera.click();
-                            
-                            // Scroll a la seccion 4 (Configuración del Préstamo)
-                            const configSection = document.getElementById('calc-monto');
-                            if (configSection) {
-                                configSection.closest('.premium-glass').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            }
-                            
-                            // Resetear estado del botón para una futura captura
+                        // Cerrar cámara INMEDIATAMENTE
+                        btnCloseCamera.click();
+                        
+                        // Scroll a la seccion 4 (Configuración del Préstamo)
+                        const configSection = document.getElementById('calc-monto');
+                        if (configSection) {
                             setTimeout(() => {
-                                btnCaptureCamera.disabled = false;
-                                btnCloseCamera.disabled = false;
-                                btnCaptureCamera.classList.remove('bg-green-500');
-                                btnCaptureCamera.classList.add('bg-primary');
-                                btnCaptureCamera.innerHTML = '<span class="material-symbols-outlined">photo_camera</span> Capturar';
-                            }, 500);
-                        }, 1200);
+                                configSection.closest('.premium-glass').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 300);
+                        }
+                        
+                        // Resetear estado del botón para una futura captura
+                        setTimeout(() => {
+                            btnCaptureCamera.disabled = false;
+                            btnCloseCamera.disabled = false;
+                            btnCaptureCamera.classList.remove('bg-green-500');
+                            btnCaptureCamera.classList.add('bg-primary');
+                            btnCaptureCamera.innerHTML = '<span class="material-symbols-outlined">photo_camera</span> Capturar';
+                        }, 500);
                     }
                 }, 'image/jpeg', 0.85);
 
