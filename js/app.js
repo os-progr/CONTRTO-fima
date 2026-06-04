@@ -305,28 +305,63 @@ document.addEventListener('DOMContentLoaded', () => {
     const calcMonto = document.getElementById('calc-monto');
     const calcInteres = document.getElementById('calc-interes');
     const calcTotal = document.getElementById('calc-total');
+    const plazoSelect = document.getElementById('plazo');
+    const cuotasBreakdown = document.getElementById('cuotas-breakdown');
+    const calcCuota1 = document.getElementById('calc-cuota1');
+    const calcCuota2 = document.getElementById('calc-cuota2');
+    const calcInteresDia = document.getElementById('calc-interes-dia');
+    const labelInteres = document.getElementById('label-interes');
+
+    function updateLoanCalculation() {
+        if (!loanSlider) return;
+        const val = parseFloat(loanSlider.value);
+        const formatCurrency = (num) => new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN', minimumFractionDigits: 2 }).format(num).replace('PEN', 'S/.');
+        const formatNoDecimals = (num) => new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 }).format(num).replace('PEN', 'S/.');
+
+        loanValueDisplay.textContent = formatNoDecimals(val);
+
+        let meses = 1;
+        if (plazoSelect && plazoSelect.value === '2 meses') {
+            meses = 2;
+        }
+
+        const interesPorMes = val * 0.15;
+        const totalInteres = interesPorMes * meses;
+        const total = val + totalInteres;
+        const interesPorDia = interesPorMes / 30;
+
+        calcMonto.textContent = formatCurrency(val);
+        calcInteres.textContent = formatCurrency(totalInteres);
+        calcTotal.textContent = formatCurrency(total);
+        if (calcInteresDia) calcInteresDia.textContent = formatCurrency(interesPorDia);
+
+        if (meses === 2) {
+            if (labelInteres) labelInteres.textContent = 'Interés (2 meses):';
+            if (cuotasBreakdown) cuotasBreakdown.classList.remove('hidden');
+            if (cuotasBreakdown) cuotasBreakdown.classList.add('flex');
+            if (calcCuota1) calcCuota1.textContent = formatCurrency(interesPorMes);
+            if (calcCuota2) calcCuota2.textContent = formatCurrency(val + interesPorMes);
+        } else {
+            if (labelInteres) labelInteres.textContent = 'Interés (15%):';
+            if (cuotasBreakdown) cuotasBreakdown.classList.add('hidden');
+            if (cuotasBreakdown) cuotasBreakdown.classList.remove('flex');
+        }
+    }
 
     if (loanSlider) {
-        loanSlider.addEventListener('input', (e) => {
-            const val = parseFloat(e.target.value);
-            const formatted = new Intl.NumberFormat('es-PE', {
-                style: 'currency', currency: 'PEN', maximumFractionDigits: 0
-            }).format(val);
-
-            loanValueDisplay.textContent = formatted.replace('PEN', 'S/.');
-
-            const interes = val * 0.15;
-            const total = val + interes;
-            const formatCurrency = (num) => new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN', minimumFractionDigits: 2 }).format(num).replace('PEN', 'S/.');
-
-            calcMonto.textContent = formatCurrency(val);
-            calcInteres.textContent = formatCurrency(interes);
-            calcTotal.textContent = formatCurrency(total);
-
+        loanSlider.addEventListener('input', () => {
+            updateLoanCalculation();
             loanValueDisplay.style.transform = 'scale(1.1)';
             setTimeout(() => { loanValueDisplay.style.transform = 'scale(1)'; }, 100);
         });
     }
+
+    if (plazoSelect) {
+        plazoSelect.addEventListener('change', updateLoanCalculation);
+    }
+    
+    // Inicializar cálculo
+    setTimeout(updateLoanCalculation, 150);
 
     // =============================================
     // 5. INPUT FOCUS ENHANCEMENT
@@ -1044,11 +1079,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
+                // Calculate dynamic interest values for DB insert
+                const val = parseFloat(document.getElementById('loan-range').value);
+                const isDosMeses = document.getElementById('plazo').value === '2 meses';
+                const interesDiarioNum = (val * 0.15) / 30;
+
                 // Insert into database
                 const { data, error } = await supabaseClient.from('solicitudess').insert([{
                     ...formData,
-                    interes: '15%',
-                    interes_diario: '2.50',
+                    interes: isDosMeses ? '30% (15% mensual)' : '15%',
+                    interes_diario: interesDiarioNum.toFixed(2),
                     mora_diaria: '1.00',
                     dni_frente_path: dniFrentePath,
                     dni_reverso_path: dniReversoPath,

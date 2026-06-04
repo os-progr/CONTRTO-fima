@@ -382,8 +382,18 @@
             <span class="text-primary" id="calc-monto">S/. 300.00</span>
         </div>
         <div class="flex justify-between items-center text-sm font-medium">
-            <span class="text-on-surface-variant">Interés (15%):</span>
+            <span class="text-on-surface-variant" id="label-interes">Interés (15%):</span>
             <span class="text-primary" id="calc-interes">S/. 45.00</span>
+        </div>
+        <div id="cuotas-breakdown" class="hidden flex-col gap-2 mt-3 pt-3 border-t border-outline-variant/20">
+            <div class="flex justify-between items-center text-xs font-medium">
+                <span class="text-on-surface-variant">Mes 1 (Solo Interés):</span>
+                <span class="text-primary" id="calc-cuota1">S/. 45.00</span>
+            </div>
+            <div class="flex justify-between items-center text-xs font-medium">
+                <span class="text-on-surface-variant">Mes 2 (Capital + Interés):</span>
+                <span class="text-primary" id="calc-cuota2">S/. 345.00</span>
+            </div>
         </div>
     </div>
     <div class="flex justify-between items-center mb-3">
@@ -391,7 +401,7 @@
         <span class="font-display font-black text-xl text-tertiary" id="calc-total">S/. 345.00</span>
     </div>
     <ul class="text-[9px] text-on-surface-variant leading-relaxed space-y-1">
-        <li>• Interés por día: <span class="font-bold text-tertiary">S/. 2.50</span></li>
+        <li>• Interés por día: <span class="font-bold text-tertiary" id="calc-interes-dia">S/. 1.50</span></li>
         <li>• Mora por atraso: <span class="font-bold text-error">S/. 1.00 diario</span></li>
     </ul>
 </div>
