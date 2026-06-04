@@ -783,8 +783,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         btnCaptureCamera.classList.remove('bg-primary');
                         btnCaptureCamera.classList.add('bg-green-500');
                         btnCaptureCamera.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Foto Confirmada';
-                        
                         // Cerrar cámara INMEDIATAMENTE
+                        btnCloseCamera.disabled = false;
                         btnCloseCamera.click();
                         
                         // Scroll a la seccion 4 (Configuración del Préstamo)
@@ -798,7 +798,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Resetear estado del botón para una futura captura
                         setTimeout(() => {
                             btnCaptureCamera.disabled = false;
-                            btnCloseCamera.disabled = false;
                             btnCaptureCamera.classList.remove('bg-green-500');
                             btnCaptureCamera.classList.add('bg-primary');
                             btnCaptureCamera.innerHTML = '<span class="material-symbols-outlined">photo_camera</span> Capturar';
