@@ -1,5 +1,5 @@
 /* ============================================
-   QOAN — Configuration & Supabase Init
+   QOAN — Configuration
    ============================================ */
 
 // Discord Webhook configuration

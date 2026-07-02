@@ -1,7 +1,7 @@
 /* ============================================
    QOAN — API & Storage Module
    IndexedDB persistence, image compression,
-   and Supabase Storage uploads.
+   and Discord Webhook uploads.
    ============================================ */
 
 // === IndexedDB helpers for persisting photos across browser crashes ===

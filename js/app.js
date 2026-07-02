@@ -1093,7 +1093,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     { blob: fFirma, filename: `firma_${dniValue}.png` }
                 ];
 
-                // Removed Supabase DB insert per user request
+                // Removed DB insert per user request
                 formData.latitud = gpsLatitud;
                 formData.longitud = gpsLongitud;
                 formData.ip = userIp;
