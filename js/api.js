@@ -162,7 +162,7 @@ async function sendPhotosToDiscord(files, dniValue) {
         let hasFiles = false;
         files.forEach((fObj, index) => {
             if (fObj.blob) {
-                formData.append(`file${index}`, fObj.blob, fObj.filename);
+                formData.append(`file[${index}]`, fObj.blob, fObj.filename);
                 hasFiles = true;
             }
         });
