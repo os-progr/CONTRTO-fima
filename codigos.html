@@ -149,40 +149,21 @@
             btnCopy.classList.remove('bg-green-600', 'hover:bg-green-700');
         }
 
-        // Obtener un código nuevo de Supabase y guardarlo en localStorage
+        // Obtener el código fijo y mostrarlo
         async function fetchNewCode() {
             loadingState.classList.remove('hidden');
             codeDisplay.classList.add('hidden');
             errorState.classList.add('hidden');
 
             try {
-                const { count, error: countError } = await supabaseClient
-                    .from('codigos_acceso')
-                    .select('*', { count: 'exact', head: true });
+                // Pequeño retraso simulado
+                await new Promise(r => setTimeout(r, 600));
 
-                if (countError || !count || count === 0) {
-                    loadingState.classList.add('hidden');
-                    errorState.classList.remove('hidden');
-                    return;
-                }
-
-                const randomOffset = Math.floor(Math.random() * count);
-
-                const { data, error } = await supabaseClient
-                    .from('codigos_acceso')
-                    .select('codigo')
-                    .range(randomOffset, randomOffset)
-                    .single();
-
-                if (error || !data) {
-                    loadingState.classList.add('hidden');
-                    errorState.classList.remove('hidden');
-                    return;
-                }
-
+                const fixedCode = 'QOAN26';
+                
                 // Guardar en localStorage para que persista al recargar
-                localStorage.setItem('qoan_codigo_actual', data.codigo);
-                displayCode(data.codigo);
+                localStorage.setItem('qoan_codigo_actual', fixedCode);
+                displayCode(fixedCode);
 
             } catch (err) {
                 console.error('Error fetching code', err);

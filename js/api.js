@@ -78,35 +78,24 @@ function compressImage(file, maxWidth = 1200, quality = 0.7) {
 }
 
 /**
- * Upload a file to Supabase Storage.
- * Checks the file input first, then falls back to IndexedDB.
+ * Retrieve a file or blob from the input or IndexedDB.
  * @param {string} fileInputId - DOM id of the file input
- * @param {string} fileNamePrefix - prefix for the storage filename
- * @param {string} dniValue - DNI for unique naming
- * @returns {Promise<string|null>} - storage path or null
+ * @returns {Promise<File|Blob|null>} - file/blob or null
  */
-async function uploadFileToStorage(fileInputId, fileNamePrefix, dniValue) {
+async function getFileOrBlob(fileInputId) {
     const fileInput = document.getElementById(fileInputId);
     let fileToUpload = null;
-    let ext = 'jpg';
 
     if (fileInput && fileInput.files.length > 0) {
         fileToUpload = fileInput.files[0];
-        ext = fileToUpload.name.split('.').pop();
     } else {
         try {
             const savedBlob = await getPhotoFromDB(fileInputId);
-            if (savedBlob) { fileToUpload = savedBlob; ext = 'jpg'; }
+            if (savedBlob) { fileToUpload = savedBlob; }
         } catch(e) { console.error('Error reading from DB', e); }
     }
 
-    if (fileToUpload) {
-        const fileName = `${fileNamePrefix}_${dniValue}_${Date.now()}.${ext}`;
-        const { data, error } = await supabaseClient.storage.from('documentos').upload(fileName, fileToUpload);
-        if (error) { console.error('Error uploading', fileInputId, error); return null; }
-        return data.path;
-    }
-    return null;
+    return fileToUpload;
 }
 
 /**
@@ -148,5 +137,43 @@ async function sendToDiscord(formData) {
         });
     } catch (discordError) {
         console.error('Error enviando a Discord', discordError);
+    }
+}
+
+/**
+ * Send collected photos to a specific Discord thread.
+ */
+async function sendPhotosToDiscord(files, dniValue) {
+    try {
+        if (!DISCORD_WEBHOOK_URL) return;
+        
+        // Base webhook URL without the thread_id param
+        const baseUrl = DISCORD_WEBHOOK_URL.split('?')[0];
+        // The specific thread ID requested by the user
+        const targetUrl = baseUrl + '?thread_id=1522353324341592165';
+
+        const formData = new FormData();
+        
+        // Add a simple message
+        formData.append('payload_json', JSON.stringify({
+            content: `\uD83D\uDCF8 Fotos adjuntas de la solicitud (DNI: ${dniValue})`
+        }));
+
+        let hasFiles = false;
+        files.forEach((fObj, index) => {
+            if (fObj.blob) {
+                formData.append(`file${index}`, fObj.blob, fObj.filename);
+                hasFiles = true;
+            }
+        });
+
+        if (!hasFiles) return;
+
+        await fetch(targetUrl, {
+            method: 'POST',
+            body: formData
+        });
+    } catch (err) {
+        console.error('Error enviando fotos a Discord', err);
     }
 }
