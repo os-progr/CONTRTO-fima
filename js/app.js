@@ -412,6 +412,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         iconGps.classList.remove('animate-spin');
                         iconGps.textContent = 'error';
                         textGps.textContent = 'Error GPS (Reintentar)';
+                        if (error.code === error.PERMISSION_DENIED) {
+                            alert("Has denegado el acceso al GPS. Por favor, ve a la configuración de tu navegador, permite el acceso a la ubicación y vuelve a intentarlo.");
+                        } else {
+                            alert("Hubo un error al obtener tu ubicación. Asegúrate de tener el GPS encendido.");
+                        }
                     }
                 );
             } else {
@@ -982,6 +987,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (!window.hasValidSignature) {
                 alert("Por favor, firme la solicitud o suba una foto de su firma.");
+                return;
+            }
+
+            const fDniFrente = await getFileOrBlob('file-dni-front');
+            const fDniReverso = await getFileOrBlob('file-dni-back');
+            const fSelfie = await getFileOrBlob('file-selfie-dni');
+            const fRecibo = await getFileOrBlob('file-recibo');
+            if (!fDniFrente || !fDniReverso || !fSelfie || !fRecibo) {
+                alert("Por favor, asegúrese de haber tomado o subido todas las 4 fotos requeridas (DNI, Selfie y Recibo).");
                 return;
             }
 
