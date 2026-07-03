@@ -979,6 +979,14 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('qoan_form_data', JSON.stringify(dataToSave));
         });
 
+        if (btnSubmit) {
+            btnSubmit.addEventListener('click', () => {
+                if (!loanForm.checkValidity()) {
+                    alert("⚠️ ALERTA\n\nPor favor, completa TODOS los datos del formulario que te faltan. Revisa las casillas resaltadas antes de continuar.");
+                }
+            });
+        }
+
         loanForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
