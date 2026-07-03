@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Simulated delay
         await new Promise(r => setTimeout(r, 600));
 
-        if (code === 'QOAN26') {
+        if (code === '09QDC9') {
             const expiryTime = Date.now() + 10 * 60 * 1000;
             localStorage.setItem('qoan_session_expiry', expiryTime.toString());
             startSessionTimer(10 * 60 * 1000);
