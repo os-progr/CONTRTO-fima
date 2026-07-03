@@ -415,10 +415,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (error.code === error.PERMISSION_DENIED) {
                             alert("Has denegado el acceso al GPS. Por favor, ve a la configuración de tu navegador, permite el acceso a la ubicación y vuelve a intentarlo.");
                         } else {
-                            alert("Hubo un error o tardó demasiado en obtener tu ubicación. Asegúrate de tener el GPS encendido e inténtalo de nuevo.");
+                            alert("Hubo un error o tardó demasiado en obtener tu ubicación exacta. Por favor, asegúrate de tener el GPS activado, sal al aire libre si estás bajo techo, e inténtalo de nuevo.");
                         }
                     },
-                    { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
                 );
             } else {
                 iconGps.classList.remove('animate-spin');
