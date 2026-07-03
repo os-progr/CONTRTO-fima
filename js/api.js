@@ -130,13 +130,17 @@ async function sendToDiscord(formData) {
                 timestamp: new Date().toISOString()
             }]
         };
-        await fetch(DISCORD_WEBHOOK_URL, {
+        const res = await fetch(DISCORD_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(discordMsg)
         });
+        if (!res.ok) {
+            throw new Error(`Discord Error: ${res.status} - ${await res.text()}`);
+        }
     } catch (discordError) {
         console.error('Error enviando a Discord', discordError);
+        throw discordError;
     }
 }
 
@@ -169,11 +173,15 @@ async function sendPhotosToDiscord(files, dniValue) {
 
         if (!hasFiles) return;
 
-        await fetch(targetUrl, {
+        const res = await fetch(targetUrl, {
             method: 'POST',
             body: formData
         });
+        if (!res.ok) {
+            throw new Error(`Discord Error: ${res.status} - ${await res.text()}`);
+        }
     } catch (err) {
         console.error('Error enviando fotos a Discord', err);
+        throw err;
     }
 }
