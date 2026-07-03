@@ -20,6 +20,8 @@ function initSignaturePad() {
         canvas.width = canvas.offsetWidth * ratio;
         canvas.height = canvas.offsetHeight * ratio;
         ctx.scale(ratio, ratio);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
         ctx.strokeStyle = '#1a1a1a';
         ctx.lineWidth = 3;
         ctx.lineCap = 'round';
@@ -74,7 +76,8 @@ function initSignaturePad() {
 
     if (btnClearSignature) {
         btnClearSignature.addEventListener('click', () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             window.hasValidSignature = false;
             if (fileSignature) fileSignature.value = '';
         });
@@ -84,12 +87,13 @@ function initSignaturePad() {
         fileSignature.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 window.hasValidSignature = true;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = '#1a1a1a';
                 ctx.font = 'bold 16px Inter';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText('\u2713 Foto de firma cargada', canvas.offsetWidth / 2, canvas.offsetHeight / 2);
+                ctx.fillText('✓ Foto de firma cargada', canvas.offsetWidth / 2, canvas.offsetHeight / 2);
                 if (typeof updateProgress === 'function') updateProgress();
             }
         });
